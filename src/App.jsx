@@ -3,7 +3,7 @@ import ReactDOM from "react-dom"
 import backgroundMusic from "./audio/terrariamusic.mp3";
 import purchaseSound from "./audio/click.mp3";
 import clickSound from "./audio/purchase.mp3";
-import defaultSwordImage from 'img/swords/sword.png';
+import defaultSwordImage from './src/img/swords';
 import clickIcon from './img/click-icon.png';
 import cpsIcon from './img/cpsIcon.png';
 import settingsIcon from './img/settings-icon.png';
@@ -20,7 +20,7 @@ import tier7 from './img/tiers/tier7.png';
 import tier8 from './img/tiers/tier8.png';
 import tier9 from './img/tiers/tier9.png';
 import tier10 from './img/tiers/tier10.png';
-import tier11 from './img/tiers/tier11.png';
+import tier11 from './img/tiers/tier11.png'; 
 import tier12 from './img/tiers/tier12.png';
 import tier13 from './img/tiers/tier13.png';
 import tier14 from './img/tiers/tier14.gif';
