@@ -1,0 +1,6 @@
+@media only screen and (max-width: 600px){
+  #Swords, #Summons{display:block; column-count:2 !important;}
+  #Tiers{display:block; column-count:1 !important;}
+  .sword-upgrade{width:100%}
+  
+}

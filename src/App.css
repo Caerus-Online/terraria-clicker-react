@@ -1,0 +1,652 @@
+@font-face {
+  font-family: "Andy-Bold";
+  src: url('./font/Andy-Bold.otf');
+}
+
+html {
+  background-image: url("./img/terraria.png");
+  background-size: cover;
+  height: 110%;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-family: "Andy-Bold";
+  font-size: 18px;
+}
+
+.App {
+  text-align: center;
+}
+
+.header {
+  padding: 1em;
+}
+
+.shopitem-icon {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  align-self: center;
+  top: 10px;
+  cursor: pointer;
+}
+
+.logo {
+  max-width: 100%;
+  height: auto;
+}
+
+.game-container {
+  margin: 0 auto;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.click-container {
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  width: 12%;
+  height: 10%;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.sword-image {
+  width: 100%;
+  height: 100%;
+}
+.sword-image:active {
+transform: rotate(10deg);
+}
+
+.click-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5em;
+  background-color: rgba(43, 37, 101, 0.7);
+  border: 2px solid black;
+  height: auto;
+  padding: 25px;
+  border-radius: 5px;
+}
+
+#multi {
+  margin-bottom: -20px;
+}
+
+.click-value, .clicks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  margin: -20px;
+}
+
+.click-value p, .clicks p, .sword-multiplier, .cps p {
+  margin: 0 0.5em 0 0;
+  font-size: 1.2em;
+}
+
+.sword-multiplier {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  margin-top: 20px;
+  margin-bottom: -20px;
+}
+
+.icon {
+  max-width: 30px;
+  height: auto;
+}
+
+/* Main container */
+.shop-menu {
+  width: 85%;
+  max-width: 950px;
+  margin: 0 auto;
+  margin-top: 20px;
+  background-color: rgba(43, 37, 101, 0.7);
+  border: 2px solid black;
+  border-radius: 5px;
+  justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Menu items */
+.shop-menu p {
+  font-size: 1.2rem;
+  font-family: "Andy-Bold";
+  color: black;
+  margin: 0;
+  padding: 10px 20px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  flex-basis: 100%;
+}
+
+/* Upgrade item */
+.upgrade {
+  font-family: "Andy-Regular";
+  font-size: 1rem;
+  color: black;
+  padding: 10px;
+  margin: 5px;
+  background-color: #C1A18C;
+  border: 2px solid black;
+  border-radius: 5px;
+  break-inside: avoid-column;
+  page-break-inside: avoid;
+  
+}
+
+/* Upgrade item */
+.tier-upgrade {
+  background-color: #6D6D6B;
+  color: black;
+  border: 1px solid black;
+  border-radius: 5px;
+  width: auto;
+  height: 80px;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 3px;
+  margin: 3px;
+  flex-grow: 1;
+}
+
+.tier-upgrade:hover {
+ box-shadow: 0 0 8px white;
+}
+
+.sword-upgrade:hover {
+ box-shadow: 0 0 8px white;
+}
+
+/* Upgrade item image container */
+.tier-upgrade-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px;
+}
+
+/* Upgrade item image */
+.tier-upgrade-image img {
+  max-width: 80%;
+  max-height: 100%;
+}
+
+/* Upgrade item details container */
+.tier-upgrade-details {
+  text-align: center;
+  font-size: 1.0rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Upgrade item detail text */
+.tier-upgrade-details p {
+  margin: 0;
+  padding: 5px 0;
+  font-size: 0.9rem;
+  font-family: "Andy-Bold";
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: -5px;
+  margin-bottom: -5px;
+}
+
+.tier-upgrade .tier-upgrade-details .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+.tier-upgrade-details p img.icon {
+  margin-right: 5px;
+}
+
+/*#Swords {
+  display: flex;
+  flex-wrap: column;
+  gap: 10px;
+  max-width: 100%;
+  overflow: auto;
+  column-count: 4;
+}*/
+
+/* Upgrade item */
+.sword-upgrade {
+  color: black;
+  border: 2px solid black;
+  background-color: rgba(86, 86, 188, 0.7);
+  border-radius: 5px;
+  width: auto;
+  height: 110px;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 3px;
+  margin: 3px;
+  flex-grow: 1;
+}
+
+/* Upgrade item details container */
+.sword-upgrade-details {
+  text-align: center;
+  font-size: 1.0rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Upgrade item detail text */
+.sword-upgrade-details p {
+  margin: 0;
+  padding: 5px 0;
+  font-size: 0.9rem;
+  font-family: "Andy-Bold";
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: -5px;
+  margin-bottom: -5px;
+}
+
+.tier-upgrade:nth-child(2) {
+  background-color: #e4dddd;
+  color: black;
+}
+
+.tier-upgrade:nth-child(3) {
+  background-color: #9595bb;
+  color: black;
+}
+.tier-upgrade:nth-child(4) {
+  background-color: #9ad69a;
+  color: black;
+}
+.tier-upgrade:nth-child(5) {
+  background-color: #e0b58f;
+  color: black;
+}
+.tier-upgrade:nth-child(6) {
+  background-color: #b27b7b;
+  color: black;
+}
+.tier-upgrade:nth-child(7) {
+  background-color: #cc85cc;
+  color: black;
+}
+.tier-upgrade:nth-child(8) {
+  background-color: #BE90E5;
+  color: black;
+}
+.tier-upgrade:nth-child(9) {
+  background-color: #9cce5a;
+  color: black;
+}
+.tier-upgrade:nth-child(10) {
+  background-color: #c3c32c;
+  color: black;
+}
+.tier-upgrade:nth-child(11) {
+  background-color: #2eaacc;
+  color: black;
+}
+.tier-upgrade:nth-child(12) {
+  background-color: #bb2550;
+  color: black;
+}
+.tier-upgrade:nth-child(13) {
+  background-color: #9237c3;
+}
+.tier-upgrade:nth-child(14) {
+  background-image:url('./img/tiers/rainbow.gif'); background-repeat:repeat;
+  color: black;
+}
+.tier-upgrade:nth-child(15) {
+  background-image:url('./img/tiers/fire.gif'); background-repeat:repeat;
+  color: black;
+}
+
+.tab {
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  font-color: black;
+  float: middle;
+  border: 2px black;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+  font-family: "Andy-Bold";
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: rgba(86, 86, 188, 0.7);
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: rgba(86, 86, 188, 0.7);
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  flex-direction: flex;
+  justify-content: center;
+  cursor: pointer;
+  padding: 5px;
+  margin: 5px;
+  columns: 5;
+  overflow-y: auto;
+  z-index: 1;
+}
+
+.sword-upgrade .tabcontent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.sword-upgrade .sword-upgrade-image {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+}
+
+.sword-upgrade .sword-upgrade-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sword-upgrade .sword-upgrade-details .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+/* Customize scrollbar track */
+::-webkit-scrollbar-track {
+  background-color: #ffffff;
+}
+
+/* Customize scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background-color: #C1A18C;
+  border: 2px solid #000;
+}
+
+::-webkit-scrollbar {
+height: auto;
+}
+
+.settings-menu {
+  display: none;
+  flex-direction: column;
+  width: auto + 20px;
+  height: auto + 10px;
+  border: 2px solid black;
+  background-color: #6E5BFF;
+  justify-content: center;
+  align-content: center;
+  column-count: 1;
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
+.prestige-shop {
+  display: none;
+  flex-direction: column;
+  width: auto + 20px;
+  height: auto + 10px;
+  border: 2px solid black;
+  background-color: #693D5E;
+  justify-content: center;
+  align-content: center;
+  column-count: 1;
+  position: fixed;
+  margin-top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
+.settingitem {
+  text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+  color: #808080;
+}
+
+.settingheader {
+  text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+  color: #ffffff;
+}
+
+.settingitem:hover {
+  color: #FFD700;
+}
+
+#cross {
+  width: 20px;
+  margin-left: 90%;
+  top: 0;
+}
+
+#settings1 {
+  margin: 2px;
+  margin-bottom: 5px;
+}
+
+.music-slider {
+  width: 60%;
+  margin-top: -10px;
+  margin-left: 20%;
+  margin-right: 20%;
+  background-color: rgba(86, 86, 188, 1);
+}
+
+.volume-slider {
+  width: 60%;
+  margin-left: 20%;
+  margin-right: 20%;
+  background-color: rgba(86, 86, 188, 1);
+}
+.audio {
+  width: 70%;
+  height: auto;
+  background-color: rgba(86, 86, 188, 1);
+  margin-left: 15%;
+  margin-right: 15%;
+  border: 2px solid black;
+  column-count: 1;
+  margin-bottom: 10px;
+}
+.close-settings {
+  border: 2px solid black;
+  background-color: rgba(86, 86, 188, 1);
+  font-family: "Andy-Bold";
+  font-size: 20px;
+  width: 50%;
+  margin: 5px;
+}
+
+/*Chrome*/
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    input[type='range'] {
+      overflow: hidden;
+      width: 80px;
+      -webkit-appearance: none;
+    }
+    
+    input[type='range']::-webkit-slider-thumb {
+      width: 10px;
+      -webkit-appearance: none;
+      height: 10px;
+      cursor: ew-resize;
+      background: #7d7d7d;
+      box-shadow: -80px 0 0 80px #000000;
+    }
+
+}
+/** FF*/
+input[type="range"]::-moz-range-progress {
+  background-color: #000000; 
+}
+input[type="range"]::-moz-range-track {  
+  background-color: #ffffff;
+}
+/* IE*/
+input[type="range"]::-ms-fill-lower {
+  background-color: #000000; 
+}
+input[type="range"]::-ms-fill-upper {  
+  background-color: #ffffff;
+}
+
+/* Upgrade item */
+.summon-upgrade {
+  color: black;
+  border: 2px solid black;
+  background-color: rgba(86, 86, 188, 0.7);
+  border-radius: 5px;
+  width: auto;
+  height: 110px;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 3px;
+  margin: 3px;
+  flex-grow: 1;
+}
+
+.summon-upgrade:hover {
+box-shadow: 0 0 8px white;
+}
+
+/* Upgrade item details container */
+.summon-upgrade-details {
+  text-align: center;
+  font-size: 1.0rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Upgrade item detail text */
+.summon-upgrade-details p {
+  margin: 0;
+  padding: 5px 0;
+  font-size: 0.9rem;
+  font-family: "Andy-Bold";
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: -5px;
+  margin-bottom: -5px;
+}
+
+.summon-upgrade .tabcontent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.summon-upgrade .summon-upgrade-image {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+}
+
+.summon-upgrade .summon-upgrade-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.summon-upgrade .summon-upgrade-details .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+.warning-popup {
+  width: 20%;
+  height: auto;
+  margin-right: 40%;
+  margin-left: 40%;
+  font-family: "Andy-Bold";
+  background-color: #C1A18C;
+  z-index: 999;
+}
+
+.box {
+   display: flex;
+   align-items:center;
+}
+
+.box img {
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+.prestigebutton {
+  max-width: 100px;
+  width: 100px;
+  margin-bottom: 10px;
+  font-family: "Andy-Bold";
+  margin-top: -20px;
+  background-color: transparent;
+  background-image: url("./img/prestigebutton.png");
+  background-size: cover;
+  text-align: center;
+}
+
+.prestige-shop p {
+  margin-top: -10px;
+}
