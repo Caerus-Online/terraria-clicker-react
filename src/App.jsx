@@ -3,7 +3,7 @@ import ReactDOM from "react-dom"
 import backgroundMusic from "./audio/terrariamusic.mp3";
 import purchaseSound from "./audio/click.mp3";
 import clickSound from "./audio/purchase.mp3";
-import defaultSwordImage from 'src\img\swords\sword.png';
+import defaultSwordImage from '/img/swords/sword.png';
 import clickIcon from './img/click-icon.png';
 import cpsIcon from './img/cpsIcon.png';
 import settingsIcon from './img/settings-icon.png';
