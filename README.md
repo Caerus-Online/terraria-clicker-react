@@ -1,6 +1,6 @@
 Terraria Clicker uses Vite and ReactJS.
 
-It is deployed using Vercel which automatically updates to the latest main branch changes.
+It is deployed using Netlify which automatically updates to the latest main branch changes.
 
 Planned Updates:
 Prestige Shop
