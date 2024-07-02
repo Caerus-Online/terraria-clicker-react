@@ -563,4 +563,5 @@ const handleSwordUpgrade = (index) => {
 </div>
 );
 }
+  
 export default App;
