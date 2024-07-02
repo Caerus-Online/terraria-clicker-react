@@ -400,6 +400,19 @@ const handleSwordUpgrade = (index) => {
   return num.toFixed(1).replace(/\.0$/, '') + suffixes[suffixIndex];
 };
 
+ function AudioControls() {
+  const [bgVolume, setBgVolume] = useState(0.5); // Initial background volume
+  const [effectsVolume, setEffectsVolume] = useState(0.8); // Initial effects volume
+  const bgMusicRef = useRef(null);
+  const purchaseSoundRef = useRef(null);
+  const clickSoundRef = useRef(null);
+
+  useEffect(() => {
+    bgMusicRef.current.volume = bgVolume;
+    purchaseSoundRef.current.volume = effectsVolume;
+    clickSoundRef.current.volume = effectsVolume;
+  }, [bgVolume, effectsVolume]);
+
   return (
 <div className="App" onKeyDown={handleKeyDown} tabIndex="0">
   <LoadingScreen />
@@ -409,11 +422,35 @@ const handleSwordUpgrade = (index) => {
   <div className="settings-menu" id="settings-menu">
     <img id="cross" src={cross} alt="close" onClick={(event) => closeSettingsMenu()}></img>
     <p id="settings1">《═《Settings》═》</p>
-    <div className='audio'>
-    <p className="settingheader">Audio</p>
-  <div className='music-slider settingitem'>Music: </div>
-<div className='volume-slider settingitem'>Volume: </div>
-  </div>
+    <div>
+      <audio ref={bgMusicRef} src={backgroundMusic} autoPlay loop />
+      <audio ref={purchaseSoundRef} src={purchaseSound} />
+      <audio ref={clickSoundRef} src={clickSound} />
+
+      <div>
+        <h3>Background Music</h3>
+        <input 
+          type="range" 
+          min="0" 
+          max="1" 
+          step="0.01" 
+          value={bgVolume} 
+          onChange={(e) => setBgVolume(parseFloat(e.target.value))} 
+        />
+      </div>
+
+      <div>
+        <h3>Sound Effects</h3>
+        <input 
+          type="range" 
+          min="0" 
+          max="1" 
+          step="0.01" 
+          value={effectsVolume} 
+          onChange={(e) => setEffectsVolume(parseFloat(e.target.value))} 
+        />
+      </div>
+    </div>
     </div>
       <div className="prestige-shop" id="prestige-shop">
          <img id="cross" src={cross} alt="close" onClick={(event) => closePrestigeShop()}/>
