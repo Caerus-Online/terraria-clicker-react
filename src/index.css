@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .sidebar-btn {
+    @apply w-12 h-12 flex items-center justify-center bg-game-secondary 
+           hover:bg-game-accent transition-colors duration-200 rounded-lg 
+           shadow-lg mb-4;
+  }
+
+  .sidebar-btn .material-icons {
+    @apply text-2xl text-white hover:text-game-highlight;
+  }
+
+  .currency-display {
+    @apply flex flex-col items-center space-y-2 text-white font-bold;
+  }
+
+  .upgrade-item {
+    @apply bg-black bg-opacity-50 backdrop-blur-sm rounded-lg p-4 
+           border transition-all duration-200 relative overflow-hidden;
+  }
+
+  .upgrade-item.can-buy {
+    @apply border-game-highlight hover:bg-opacity-70 cursor-pointer;
+  }
+
+  .upgrade-item.can-buy:hover {
+    @apply transform scale-105;
+    animation: pulse-border 2s infinite;
+  }
+
+  .upgrade-item.cannot-buy {
+    @apply border-game-accent opacity-75 cursor-not-allowed;
+  }
+
+  .upgrade-item.purchased {
+    @apply border-game-highlight bg-game-accent bg-opacity-25;
+  }
+
+  .warning-popup {
+    @apply fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg
+           shadow-lg animate-bounce font-game;
+  }
+
+  /* Custom scrollbar for upgrade panels */
+  .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.game-accent') theme('colors.game-secondary');
+  }
+
+  .overflow-y-auto::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-track {
+    @apply bg-game-secondary rounded-full;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    @apply bg-game-accent rounded-full;
+  }
+
+  /* Custom range input styling */
+  input[type="range"] {
+    @apply appearance-none bg-game-accent rounded-lg h-2;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 rounded-full bg-game-highlight cursor-pointer;
+  }
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: theme('colors.game-highlight');
+    box-shadow: 0 0 5px theme('colors.game-highlight');
+  }
+  50% {
+    border-color: theme('colors.game-accent');
+    box-shadow: 0 0 15px theme('colors.game-highlight');
+  }
+}
+
+body {
+  @apply bg-game-primary text-white font-game;
+  image-rendering: pixelated;
+}
+
+.app {
+  @apply min-h-screen flex;
+}
+
+.sidebar {
+  @apply fixed left-0 top-0 h-full w-16 bg-black bg-opacity-50 backdrop-blur-sm
+         flex flex-col items-center justify-between py-4 shadow-xl z-50;
+}
+
+.main-content {
+  @apply flex-1 ml-16 p-4;
+} 
