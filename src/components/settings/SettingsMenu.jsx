@@ -10,6 +10,13 @@ const SettingsMenu = ({
 }) => {
   if (!isOpen) return null;
 
+  const handleClearData = () => {
+    if (window.confirm('Are you sure you want to clear all game data? This cannot be undone.')) {
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
       {/* Backdrop */}
@@ -62,6 +69,15 @@ const SettingsMenu = ({
                 className="w-full h-2 bg-game-accent rounded-lg appearance-none cursor-pointer"
               />
             </div>
+          </div>
+
+          <div className="border-t border-game-accent pt-6">
+            <button
+              onClick={handleClearData}
+              className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-game text-sm transition-colors"
+            >
+              Clear All Data
+            </button>
           </div>
         </div>
       </div>

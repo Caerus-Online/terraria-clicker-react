@@ -9,6 +9,10 @@ import { formatNumber } from './utils/formatNumber';
 import defaultSwordImage from './img/sword.png';
 import { tierUpgradesArray, swordUpgradesArray, summonUpgradesArray } from './data/upgradeData';
 import PrestigeShop from './components/prestige/PrestigeShop';
+import { prestigeArtifacts, calculateArtifactCost, calculateTotalBonus, calculatePrestigeMultiplier } from './data/prestigeArtifacts';
+import { achievements, checkAchievement } from './data/achievementData';
+import AchievementPanel from './components/achievements/AchievementPanel';
+import AchievementNotification from './components/achievements/AchievementNotification';
 
 function App() {
   // Original state management
@@ -44,6 +48,12 @@ function App() {
   const [prestigeRequirement, setPrestigeRequirement] = useState(() => 
     parseInt(localStorage.getItem('prestigeRequirement')) || 1000
   );
+  const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
+  const [userAchievements, setUserAchievements] = useState(() => {
+    const stored = localStorage.getItem('achievements');
+    return stored ? JSON.parse(stored) : achievements;
+  });
+  const [newAchievement, setNewAchievement] = useState(null);
 
   // Refs
   const clickerRef = useRef(null);
@@ -227,6 +237,69 @@ function App() {
     audioFunctions.current.playPurchaseSound();
   };
 
+  // Add artifacts state
+  const [artifacts, setArtifacts] = useState(() => {
+    const stored = localStorage.getItem('artifacts');
+    return stored ? JSON.parse(stored) : prestigeArtifacts;
+  });
+
+  // Calculate total bonuses including prestige level and artifacts
+  const calculateTotalMultiplier = () => {
+    const prestigeMultiplier = calculatePrestigeMultiplier(prestigeLevel);
+    const artifactBonus = calculateTotalBonus(artifacts, 'CLICK_POWER');
+    return prestigeMultiplier * (1 + artifactBonus);
+  };
+
+  // Handle artifact purchase/upgrade
+  const handleArtifactPurchase = (artifactId) => {
+    const artifact = artifacts.find(a => a.id === artifactId);
+    if (!artifact || artifact.level >= artifact.maxLevel) return;
+
+    const cost = calculateArtifactCost(artifact);
+    if (prestigeCurrency >= cost) {
+      setPrestigeCurrency(prev => prev - cost);
+      
+      setArtifacts(prev => prev.map(a => {
+        if (a.id === artifactId) {
+          return { ...a, level: a.level + 1 };
+        }
+        return a;
+      }));
+
+      // Play purchase sound
+      audioFunctions.current.playPurchaseSound();
+    }
+  };
+
+  // Achievement stats tracking
+  const achievementStats = {
+    CLICK_POWER: clickValue,
+    TOTAL_COINS: clicks,
+    CPS: cps,
+    SWORD_COUNT: swordUpgrades.filter(u => u.purchased).length,
+    PRESTIGE_COUNT: prestigeLevel,
+    PRESTIGE_LEVEL: prestigeLevel
+  };
+
+  // Check achievements
+  useEffect(() => {
+    userAchievements.forEach(achievement => {
+      if (!achievement.earned && checkAchievement(achievement, achievementStats[achievement.type])) {
+        // Update achievement
+        const updatedAchievements = userAchievements.map(a => 
+          a.id === achievement.id ? { ...a, earned: true } : a
+        );
+        setUserAchievements(updatedAchievements);
+        
+        // Show notification
+        setNewAchievement(achievement);
+        
+        // Play sound
+        audioFunctions.current.playPurchaseSound();
+      }
+    });
+  }, [achievementStats]);
+
   // Save state to localStorage
   useEffect(() => {
     localStorage.setItem('clicks', clicks);
@@ -238,7 +311,9 @@ function App() {
     localStorage.setItem('swordUpgrades', JSON.stringify(swordUpgrades));
     localStorage.setItem('summonUpgrades', JSON.stringify(summonUpgrades));
     localStorage.setItem('prestigeRequirement', prestigeRequirement);
-  }, [clicks, clickValue, cps, prestigeCurrency, prestigeLevel, tierUpgrades, swordUpgrades, summonUpgrades, prestigeRequirement]);
+    localStorage.setItem('artifacts', JSON.stringify(artifacts));
+    localStorage.setItem('achievements', JSON.stringify(userAchievements));
+  }, [clicks, clickValue, cps, prestigeCurrency, prestigeLevel, tierUpgrades, swordUpgrades, summonUpgrades, prestigeRequirement, artifacts, userAchievements]);
 
   // CPS interval
   useEffect(() => {
@@ -248,6 +323,16 @@ function App() {
     return () => clearInterval(interval);
   }, [cps]);
 
+  // Clear achievement notification after delay
+  useEffect(() => {
+    if (newAchievement) {
+      const timer = setTimeout(() => {
+        setNewAchievement(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [newAchievement]);
+
   return (
     <div className="app" onKeyDown={handleKeyDown} tabIndex="0">
       <LoadingScreen />
@@ -255,7 +340,7 @@ function App() {
       <Sidebar 
         onOpenShop={() => setIsShopOpen(true)}
         onOpenPrestige={() => setIsPrestigeOpen(true)}
-        onOpenAchievements={() => {}} // Placeholder
+        onOpenAchievements={() => setIsAchievementsOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         clicks={formatNumber(clicks)}
         prestigeCurrency={formatNumber(prestigeCurrency)}
@@ -311,8 +396,24 @@ function App() {
           prestigeCurrency={prestigeCurrency}
           onPrestige={handlePrestige}
           prestigeRequirement={prestigeRequirement}
-          artifacts={[]} // We'll implement artifacts next
-          onPurchaseArtifact={() => {}} // We'll implement this next
+          artifacts={artifacts}
+          onPurchaseArtifact={handleArtifactPurchase}
+        />
+      )}
+
+      {isAchievementsOpen && (
+        <AchievementPanel 
+          isOpen={isAchievementsOpen}
+          onClose={() => setIsAchievementsOpen(false)}
+          achievements={userAchievements}
+          currentStats={achievementStats}
+        />
+      )}
+
+      {newAchievement && (
+        <AchievementNotification 
+          achievement={newAchievement}
+          onClose={() => setNewAchievement(null)}
         />
       )}
 

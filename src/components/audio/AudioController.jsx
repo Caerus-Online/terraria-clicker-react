@@ -20,13 +20,24 @@ const AudioController = ({
       
       // Auto-play background music (with user interaction requirement handling)
       const playMusic = () => {
-        bgMusicRef.current.play().catch(error => {
-          console.log("Audio autoplay failed:", error);
-        });
+        if (bgMusicRef.current) {
+          bgMusicRef.current.play().catch(error => {
+            console.log("Audio autoplay failed:", error);
+          });
+        }
       };
       
-      document.addEventListener('click', playMusic, { once: true });
-      return () => document.removeEventListener('click', playMusic);
+      // Wait for the audio element to be loaded
+      bgMusicRef.current.addEventListener('canplaythrough', () => {
+        document.addEventListener('click', playMusic, { once: true });
+      });
+
+      return () => {
+        document.removeEventListener('click', playMusic);
+        if (bgMusicRef.current) {
+          bgMusicRef.current.removeEventListener('canplaythrough', () => {});
+        }
+      };
     }
   }, []);
 

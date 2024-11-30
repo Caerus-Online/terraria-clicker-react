@@ -5,6 +5,7 @@ import logo from '../../img/logo.png';
 import clickIcon from '../../img/click-icon.png';
 import cpsIcon from '../../img/cpsIcon.png';
 import coinIcon from '../../img/coin-icon.png';
+import { formatNumber } from '../../utils/formatNumber';
 
 const ClickerCore = forwardRef(({ 
   handleClick, 
@@ -15,6 +16,7 @@ const ClickerCore = forwardRef(({
   swordMultiplier,
   prestigeLevel
 }, ref) => {
+
   return (
     <div className="relative flex flex-col items-center min-h-screen">
       {/* Background */}
@@ -41,7 +43,7 @@ const ClickerCore = forwardRef(({
         <div 
           ref={ref}
           onClick={handleClick}
-          className="cursor-pointer transform transition-transform hover:scale-110 animate-float"
+          className="cursor-pointer transform hover:scale-110 active:scale-95 active:rotate-12 transition-all duration-100"
         >
           <img 
             src={swordImage} 
@@ -64,7 +66,7 @@ const ClickerCore = forwardRef(({
               {/* CPS */}
               <div className="flex items-center space-x-2">
                 <img src={cpsIcon} alt="CPS" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
-                <span className="text-game-silver">{cps}</span>
+                <span className="text-game-silver">{cps} per second</span>
               </div>
               
               {/* Multiplier */}
@@ -86,13 +88,6 @@ const ClickerCore = forwardRef(({
               <span className="text-game-gold text-xl">{clicks}</span>
             </div>
           </div>
-        </div>
-
-        {/* CPS Display */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-          <p className="font-game text-2xl text-game-text text-center drop-shadow-lg">
-            {cps} Clicks Per Second
-          </p>
         </div>
       </div>
     </div>
