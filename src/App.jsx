@@ -396,15 +396,14 @@ function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const playerId = playerService.getPlayerId();
 
-  // Add loading state for initial data fetch
-  const [isLoading, setIsLoading] = useState(true);
+  // Change loading state to only show on initial load
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
       if (user) {
         try {
-          setIsLoading(true);
           const { data } = await databaseService.loadUserData(user.id);
           
           if (data) {
@@ -473,17 +472,17 @@ function App() {
         } catch (error) {
           console.error('Error loading user data:', error);
         } finally {
-          setIsLoading(false);
+          setInitialLoading(false);  // Only set false after initial load
         }
       } else {
         // Load from localStorage for anonymous users
         // ... existing localStorage loading logic ...
-        setIsLoading(false);
+        setInitialLoading(false);  // Set false for anonymous users too
       }
     };
 
     loadUserData();
-  }, [user]);
+  }, [user]);  // Only run on user change
 
   // Save game state
   useEffect(() => {
@@ -556,14 +555,13 @@ function App() {
   // Add leaderboard state
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
-  if (isLoading) {
+  // Only show loading screen on initial load
+  if (initialLoading) {
     return <LoadingScreen />;
   }
 
   return (
     <div className="app" onKeyDown={handleKeyDown} tabIndex="0">
-      <LoadingScreen />
-      
       <Sidebar 
         onOpenShop={() => setIsShopOpen(true)}
         onOpenPrestige={() => setIsPrestigeOpen(true)}
