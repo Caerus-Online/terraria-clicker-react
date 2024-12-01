@@ -19,36 +19,32 @@ const PrestigeShop = ({
   const potentialGain = Math.floor(currentClicks / prestigeRequirement);
   const prestigeBonus = prestigeLevel * 0.05; // 5% per level
 
-  // Prevent event propagation
-  const handleContentClick = (e) => {
-    e.stopPropagation();
-  };
-
-  const handlePrestigeClick = () => {
-    if (currentClicks >= prestigeRequirement && onPrestige) {
-      onPrestige(potentialGain);
-    }
-  };
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[100]">
+    <div className="fixed inset-0 flex items-center justify-center z-50">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" 
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
       
       {/* Prestige Panel */}
-      <div 
-        className="relative bg-game-secondary bg-opacity-90 rounded-lg shadow-game max-w-4xl w-full m-4 max-h-[90vh] flex flex-col"
-        onClick={handleContentClick}
-      >
+      <div className="relative bg-game-secondary bg-opacity-90 rounded-lg shadow-game max-w-4xl w-full m-4 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-game-accent">
-          <h2 className="font-game text-xl text-game-text">Prestige Shop</h2>
+          <div className="flex items-center space-x-4">
+            <h2 className="font-game text-xl text-white">Prestige Shop</h2>
+            <div className="flex items-center space-x-2 bg-black bg-opacity-50 px-3 py-1 rounded-lg">
+              <img 
+                src={prestigeCoinIcon} 
+                alt="Prestige Coins" 
+                className="w-5 h-5"
+                style={{ imageRendering: 'pixelated' }}
+              />
+              <span className="text-purple-400 font-game">
+                {formatNumber(prestigeCurrency)}
+              </span>
+            </div>
+          </div>
           <button 
             onClick={onClose}
-            className="text-game-text hover:text-game-highlight transition-colors"
+            className="text-white hover:text-game-highlight transition-colors"
           >
             <span className="material-icons">close</span>
           </button>
@@ -56,32 +52,18 @@ const PrestigeShop = ({
 
         {/* Prestige Info */}
         <div className="p-6 border-b border-game-accent">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <img 
-                src={prestigeCoinIcon} 
-                alt="Prestige Coins" 
-                className="w-6 h-6"
-                style={{ imageRendering: 'pixelated' }}
-              />
-              <span className="text-purple-400 font-game">
-                {formatNumber(prestigeCurrency)}
+          <div className="bg-black bg-opacity-50 rounded-lg p-4">
+            <div className="text-white font-game mb-4">
+              Current Prestige Level: {prestigeLevel} 
+              <span className="text-purple-400 ml-2">
+                (+{(prestigeBonus * 100).toFixed(0)}% to all production)
               </span>
             </div>
-            <div className="text-game-text font-game">
-              Level {prestigeLevel} (+{(prestigeBonus * 100).toFixed(0)}% to all production)
-            </div>
-          </div>
-
-          <div className="bg-black bg-opacity-50 rounded-lg p-4">
-            <p className="text-game-text font-game mb-4">
+            <p className="text-white font-game mb-4">
               Prestige now to gain {formatNumber(potentialGain)} prestige coins
             </p>
-            <p className="text-game-accent font-game text-sm mb-2">
+            <p className="text-white font-game text-sm mb-4">
               Requirement: {formatNumber(prestigeRequirement)} clicks
-            </p>
-            <p className="text-game-accent font-game text-sm mb-4">
-              Each prestige level provides +5% to all production (Current: +{(prestigeBonus * 100).toFixed(0)}%)
             </p>
             <button
               className={`
@@ -91,7 +73,7 @@ const PrestigeShop = ({
                   : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                 }
               `}
-              onClick={handlePrestigeClick}
+              onClick={() => currentClicks >= prestigeRequirement && onPrestige(potentialGain)}
               disabled={currentClicks < prestigeRequirement}
             >
               Prestige
@@ -100,7 +82,8 @@ const PrestigeShop = ({
         </div>
 
         {/* Artifacts Grid */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="modal-content p-4">
+          <h3 className="font-game text-xl text-white mb-4">Artifacts</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {artifacts.map((artifact) => (
               <div 
@@ -125,8 +108,8 @@ const PrestigeShop = ({
                     style={{ imageRendering: 'pixelated' }}
                   />
                   <div>
-                    <h3 className="font-game text-game-text">{artifact.name}</h3>
-                    <p className="text-sm text-game-accent">
+                    <h3 className="font-game text-white">{artifact.name}</h3>
+                    <p className="text-sm text-white">
                       Level {artifact.level}/{artifact.maxLevel}
                     </p>
                     {artifact.level < artifact.maxLevel && (
@@ -144,7 +127,7 @@ const PrestigeShop = ({
                     )}
                   </div>
                 </div>
-                <p className="mt-2 text-sm text-game-text">
+                <p className="mt-2 text-sm text-white">
                   {artifact.description}
                 </p>
               </div>

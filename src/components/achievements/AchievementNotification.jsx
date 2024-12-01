@@ -19,7 +19,7 @@ const AchievementNotification = ({ achievement, onClose }) => {
       </div>
       <div>
         <h3 className="font-game text-sm text-game-highlight">Achievement Unlocked!</h3>
-        <p className="text-game-text text-xs mt-1">{achievement.name}</p>
+        <p className="text-white text-xs mt-1">{achievement.name}</p>
       </div>
     </div>
   );

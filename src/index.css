@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Andy-Bold';
+  src: url('/fonts/Andy-Bold.otf') format('opentype');
+}
+
 body {
   @apply bg-game-primary text-white font-game overflow-hidden;
   image-rendering: pixelated;

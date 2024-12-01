@@ -1,14 +1,20 @@
 import React from 'react';
 import { formatNumber } from '../../utils/formatNumber';
-import { getAchievementProgress } from '../../data/achievementData';
+import { getAchievementProgress, achievements as defaultAchievements } from '../../data/achievementData';
 
 const AchievementPanel = ({
   isOpen,
   onClose,
-  achievements,
+  achievements = defaultAchievements,
   currentStats
 }) => {
   if (!isOpen) return null;
+
+  const achievementsToShow = achievements?.length ? achievements : defaultAchievements.map(achievement => ({
+    ...achievement,
+    earned: false,
+    progress: 0
+  }));
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-[100]">
@@ -22,22 +28,22 @@ const AchievementPanel = ({
       <div className="relative bg-game-secondary bg-opacity-90 rounded-lg shadow-game max-w-4xl w-full m-4 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-game-accent">
-          <h2 className="font-game text-xl text-game-text">Achievements</h2>
+          <h2 className="font-game text-xl text-white">Achievements</h2>
           <button 
             onClick={onClose}
-            className="text-game-text hover:text-game-highlight transition-colors"
+            className="text-white hover:text-game-highlight transition-colors"
           >
             <span className="material-icons">close</span>
           </button>
         </div>
 
         {/* Achievement Grid */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="modal-content p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {achievements.map((achievement) => {
+            {achievementsToShow.map((achievement) => {
               const progress = getAchievementProgress(
                 achievement, 
-                currentStats[achievement.type] || 0
+                currentStats?.[achievement.type] || 0
               );
               
               return (
@@ -67,10 +73,10 @@ const AchievementPanel = ({
                       )}
                     </div>
                     <div>
-                      <h3 className="font-game text-game-text text-sm">
+                      <h3 className="font-game text-white text-sm">
                         {achievement.name}
                       </h3>
-                      <p className="text-game-accent text-xs mt-1">
+                      <p className="text-white text-xs mt-1">
                         {achievement.description}
                       </p>
                     </div>
@@ -85,10 +91,10 @@ const AchievementPanel = ({
                       />
                     </div>
                     <div className="flex justify-between mt-1">
-                      <span className="text-xs text-game-text">
-                        {formatNumber(currentStats[achievement.type] || 0)}
+                      <span className="text-xs text-white">
+                        {formatNumber(currentStats?.[achievement.type] || 0)}
                       </span>
-                      <span className="text-xs text-game-text">
+                      <span className="text-xs text-white">
                         {formatNumber(achievement.requirement)}
                       </span>
                     </div>
