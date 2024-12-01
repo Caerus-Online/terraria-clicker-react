@@ -49,12 +49,18 @@ export const databaseService = {
 
       if (upgradesError) throw upgradesError;
 
-      // Initialize achievements
+      // Initialize achievements with the full default achievements array
       const { error: achievementsError } = await supabase
         .from('achievements')
         .upsert([{
           user_id: userId,
-          achievements: achievements.map(a => ({ ...a, earned: false }))
+          achievements: achievements.map(achievement => ({
+            ...achievement,
+            earned: false,
+            progress: 0
+          })),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }]);
 
       if (achievementsError) throw achievementsError;
