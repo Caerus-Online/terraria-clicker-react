@@ -13,6 +13,7 @@ import { prestigeArtifacts, calculateArtifactCost, calculateTotalBonus, calculat
 import { achievements, checkAchievement } from './data/achievementData';
 import AchievementPanel from './components/achievements/AchievementPanel';
 import AchievementNotification from './components/achievements/AchievementNotification';
+import ProfileStats from './components/profile/ProfileStats';
 
 function App() {
   // Original state management
@@ -54,6 +55,7 @@ function App() {
     return stored ? JSON.parse(stored) : achievements;
   });
   const [newAchievement, setNewAchievement] = useState(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Refs
   const clickerRef = useRef(null);
@@ -77,7 +79,12 @@ function App() {
 
   // Update click handler to play sound
   const handleClick = () => {
-    setClicks(clicks + clickValue);
+    setClicks(prev => prev + clickValue);
+    setLifetimeStats(prev => ({
+      ...prev,
+      clicks: prev.clicks + 1,
+      coins: prev.coins + clickValue
+    }));
     audioFunctions.current.playClickSound();
   };
 
@@ -235,6 +242,10 @@ function App() {
     
     // Play purchase sound
     audioFunctions.current.playPurchaseSound();
+    setLifetimeStats(prev => ({
+      ...prev,
+      prestigeCount: prev.prestigeCount + 1
+    }));
   };
 
   // Add artifacts state
@@ -319,6 +330,10 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       setClicks(prev => prev + cps);
+      setLifetimeStats(prev => ({
+        ...prev,
+        coins: prev.coins + cps
+      }));
     }, 1000);
     return () => clearInterval(interval);
   }, [cps]);
@@ -333,6 +348,33 @@ function App() {
     }
   }, [newAchievement]);
 
+  // Add lifetime stats
+  const [lifetimeStats, setLifetimeStats] = useState(() => {
+    const stored = localStorage.getItem('lifetimeStats');
+    return stored ? JSON.parse(stored) : {
+      clicks: 0,
+      coins: 0,
+      prestigeCount: 0
+    };
+  });
+
+  // Save lifetime stats to localStorage
+  useEffect(() => {
+    localStorage.setItem('lifetimeStats', JSON.stringify(lifetimeStats));
+  }, [lifetimeStats]);
+
+  // Calculate stats for profile panel
+  const profileStats = {
+    lifetimeClicks: lifetimeStats.clicks,
+    lifetimeCoins: lifetimeStats.coins,
+    prestigeLevel: prestigeLevel,
+    achievementsEarned: userAchievements.filter(a => a.earned).length,
+    totalAchievements: userAchievements.length,
+    clickPower: clickValue,
+    cps: cps,
+    swordMultiplier: swordMultiplier
+  };
+
   return (
     <div className="app" onKeyDown={handleKeyDown} tabIndex="0">
       <LoadingScreen />
@@ -342,8 +384,7 @@ function App() {
         onOpenPrestige={() => setIsPrestigeOpen(true)}
         onOpenAchievements={() => setIsAchievementsOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        clicks={formatNumber(clicks)}
-        prestigeCurrency={formatNumber(prestigeCurrency)}
+        onOpenProfile={() => setIsProfileOpen(true)}
       />
 
       <main className="main-content">
@@ -421,6 +462,14 @@ function App() {
         <div className="warning-popup">
           Not enough coins!
         </div>
+      )}
+
+      {isProfileOpen && (
+        <ProfileStats 
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          stats={profileStats}
+        />
       )}
     </div>
   );

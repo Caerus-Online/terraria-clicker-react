@@ -11,10 +11,36 @@ const SettingsMenu = ({
   if (!isOpen) return null;
 
   const handleClearData = () => {
-    if (window.confirm('Are you sure you want to clear all game data? This cannot be undone.')) {
+    // Create a themed confirmation dialog
+    const confirmDialog = document.createElement('div');
+    confirmDialog.className = 'fixed inset-0 flex items-center justify-center z-[200]';
+    confirmDialog.innerHTML = `
+      <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"></div>
+      <div class="relative bg-game-secondary bg-opacity-90 rounded-lg p-6 shadow-game max-w-md w-full m-4">
+        <h3 class="font-game text-xl text-game-text mb-4">Clear Save Data?</h3>
+        <p class="text-game-text mb-6">This action cannot be undone. All progress will be lost!</p>
+        <div class="flex justify-end space-x-4">
+          <button class="px-4 py-2 bg-game-accent hover:bg-opacity-80 text-white rounded font-game" id="cancel">
+            Cancel
+          </button>
+          <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-game" id="confirm">
+            Clear Data
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(confirmDialog);
+
+    // Handle dialog buttons
+    document.getElementById('cancel').onclick = () => {
+      document.body.removeChild(confirmDialog);
+    };
+
+    document.getElementById('confirm').onclick = () => {
       localStorage.clear();
       window.location.reload();
-    }
+    };
   };
 
   return (
@@ -76,7 +102,7 @@ const SettingsMenu = ({
               onClick={handleClearData}
               className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-game text-sm transition-colors"
             >
-              Clear All Data
+              Clear Save Data
             </button>
           </div>
         </div>

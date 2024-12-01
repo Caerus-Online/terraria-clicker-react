@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import TierUpgrades from './TierUpgrades';
 import SwordUpgrades from './SwordUpgrades';
 import SummonUpgrades from './SummonUpgrades';
+import coinIcon from '../../img/coin-icon.png';
+import { formatNumber } from '../../utils/formatNumber';
 
 const UpgradeShop = ({
   tierUpgrades,
@@ -24,7 +26,20 @@ const UpgradeShop = ({
       <div className="relative bg-game-secondary bg-opacity-90 rounded-lg shadow-game max-w-4xl w-full m-4 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-game-accent">
-          <h2 className="font-game text-xl text-game-text">Shop</h2>
+          <div className="flex items-center space-x-4">
+            <h2 className="font-game text-xl text-game-text">Shop</h2>
+            <div className="flex items-center space-x-2 bg-black bg-opacity-50 px-3 py-1 rounded-lg">
+              <img 
+                src={coinIcon} 
+                alt="Coins" 
+                className="w-5 h-5"
+                style={{ imageRendering: 'pixelated' }}
+              />
+              <span className="text-game-gold font-game">
+                {formatNumber(clicks)}
+              </span>
+            </div>
+          </div>
           <button 
             onClick={onClose}
             className="text-game-text hover:text-game-highlight transition-colors"
@@ -68,7 +83,7 @@ const UpgradeShop = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="modal-content p-4">
           {activeTab === 'Tiers' && (
             <TierUpgrades 
               upgrades={tierUpgrades}

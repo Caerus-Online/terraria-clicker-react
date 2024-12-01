@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  @apply bg-game-primary text-white font-game overflow-hidden;
+  image-rendering: pixelated;
+}
+
 @layer components {
   .sidebar-btn {
     @apply w-12 h-12 flex items-center justify-center bg-game-secondary 
@@ -70,6 +75,20 @@
   input[type="range"]::-webkit-slider-thumb {
     @apply appearance-none w-4 h-4 rounded-full bg-game-highlight cursor-pointer;
   }
+
+  .app {
+    @apply min-h-screen flex overflow-hidden;
+  }
+
+  .main-content {
+    @apply flex-1 ml-16 p-4 overflow-hidden;
+  }
+
+  /* Update modal content areas to allow scrolling */
+  .modal-content {
+    @apply overflow-y-auto;
+    max-height: calc(90vh - 8rem); /* Adjust based on header/footer size */
+  }
 }
 
 @keyframes pulse-border {
@@ -83,20 +102,8 @@
   }
 }
 
-body {
-  @apply bg-game-primary text-white font-game;
-  image-rendering: pixelated;
-}
-
-.app {
-  @apply min-h-screen flex;
-}
-
 .sidebar {
   @apply fixed left-0 top-0 h-full w-16 bg-black bg-opacity-50 backdrop-blur-sm
          flex flex-col items-center justify-between py-4 shadow-xl z-50;
 }
-
-.main-content {
-  @apply flex-1 ml-16 p-4;
-} 
+ 

@@ -5,12 +5,18 @@ const Sidebar = ({
   onOpenPrestige,
   onOpenAchievements,
   onOpenSettings,
-  clicks,
-  prestigeCurrency
+  onOpenProfile,
 }) => {
   return (
     <div className="sidebar">
       <div className="sidebar-top flex flex-col items-center">
+        <button 
+          className="sidebar-btn" 
+          onClick={onOpenProfile}
+          title="Profile"
+        >
+          <span className="material-icons">person</span>
+        </button>
         <button 
           className="sidebar-btn" 
           onClick={onOpenShop}
@@ -39,12 +45,6 @@ const Sidebar = ({
         >
           <span className="material-icons">settings</span>
         </button>
-      </div>
-      <div className="sidebar-bottom">
-        <div className="currency-display">
-          <span className="text-yellow-400">{clicks}</span>
-          <span className="text-purple-400">{prestigeCurrency}</span>
-        </div>
       </div>
     </div>
   );
