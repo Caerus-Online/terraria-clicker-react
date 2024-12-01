@@ -416,14 +416,52 @@ function App() {
             setPrestigeLevel(data.progress.prestige_level || 0);
             setPrestigeRequirement(data.progress.prestige_requirement || 1000);
 
-            // Set upgrades
-            setTierUpgrades(data.upgrades.tier_upgrades || tierUpgradesArray);
-            setSwordUpgrades(data.upgrades.sword_upgrades || swordUpgradesArray);
-            setSummonUpgrades(data.upgrades.summon_upgrades || summonUpgradesArray);
-            setArtifacts(data.upgrades.artifacts || prestigeArtifacts);
+            // Set upgrades - Preserve the original image paths
+            if (data.upgrades.tier_upgrades) {
+              const loadedTierUpgrades = data.upgrades.tier_upgrades.map((upgrade, index) => ({
+                ...tierUpgradesArray[index],  // Get base upgrade with correct image path
+                ...upgrade,  // Spread loaded data
+                image: tierUpgradesArray[index].image  // Ensure correct image path
+              }));
+              setTierUpgrades(loadedTierUpgrades);
+            }
 
-            // Set achievements
-            setUserAchievements(data.achievements.achievements || achievements);
+            if (data.upgrades.sword_upgrades) {
+              const loadedSwordUpgrades = data.upgrades.sword_upgrades.map((upgrade, index) => ({
+                ...swordUpgradesArray[index],
+                ...upgrade,
+                image: swordUpgradesArray[index].image
+              }));
+              setSwordUpgrades(loadedSwordUpgrades);
+            }
+
+            if (data.upgrades.summon_upgrades) {
+              const loadedSummonUpgrades = data.upgrades.summon_upgrades.map((upgrade, index) => ({
+                ...summonUpgradesArray[index],
+                ...upgrade,
+                image: summonUpgradesArray[index].image
+              }));
+              setSummonUpgrades(loadedSummonUpgrades);
+            }
+
+            if (data.upgrades.artifacts) {
+              const loadedArtifacts = data.upgrades.artifacts.map((artifact, index) => ({
+                ...prestigeArtifacts[index],
+                ...artifact,
+                image: prestigeArtifacts[index].image
+              }));
+              setArtifacts(loadedArtifacts);
+            }
+
+            // Set achievements with correct icons
+            if (data.achievements.achievements) {
+              const loadedAchievements = data.achievements.achievements.map((achievement, index) => ({
+                ...achievements[index],
+                ...achievement,
+                icon: achievements[index].icon
+              }));
+              setUserAchievements(loadedAchievements);
+            }
 
             // Set lifetime stats
             setLifetimeStats({
