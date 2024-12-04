@@ -4,7 +4,6 @@ import Sidebar from './components/navigation/Sidebar';
 import UpgradeShop from './components/shop/UpgradeShop';
 import SettingsMenu from './components/settings/SettingsMenu';
 import AudioController from './components/audio/AudioController';
-import LoadingScreen from './components/loadingscreen/LoadingScreen';
 import { formatNumber } from './utils/formatNumber';
 import defaultSwordImage from './img/sword.png';
 import { tierUpgradesArray, swordUpgradesArray, summonUpgradesArray } from './data/upgradeData';
@@ -515,7 +514,7 @@ function App() {
   };
 
   if (initialLoading) {
-    return <LoadingScreen />;
+    return null;  // Return nothing while loading instead of the loading screen
   }
 
   return (
@@ -563,6 +562,7 @@ function App() {
           isOpen={isProfileOpen}
           onClose={() => setIsProfileOpen(false)}
           stats={profileStats}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
         />
       )}
 

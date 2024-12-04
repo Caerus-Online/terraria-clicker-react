@@ -102,7 +102,7 @@ const SettingsMenu = ({
       <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
       
       {/* Settings Panel */}
-      <div className="relative bg-game-secondary bg-opacity-90 rounded-lg shadow-game max-w-md w-full m-4">
+      <div className="relative bg-game-secondary bg-opacity-90 rounded-lg shadow-game max-w-md w-full m-4 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-game-accent">
           <h2 className="font-game text-xl text-game-text">Settings</h2>
@@ -115,7 +115,7 @@ const SettingsMenu = ({
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-6">
+        <div className="p-4 space-y-6 overflow-y-auto flex-1">
           {/* Account Section */}
           {user ? (
             <div className="bg-black bg-opacity-50 rounded-lg p-4">
@@ -222,6 +222,24 @@ const SettingsMenu = ({
               Create an account to save across devices!
             </div>
           )}
+
+          {/* Footer */}
+          <div className="text-center space-y-2 mt-8 border-t border-game-accent pt-4">
+            <div className="text-sm text-white">
+              A project by{' '}
+              <a 
+                href="https://caerus-online.xyz" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-game-highlight hover:text-game-highlight/80 transition-colors"
+              >
+                Caerus Online
+              </a>
+            </div>
+            <div className="text-xs text-game-accent">
+              Terraria made by Re-Logic
+            </div>
+          </div>
         </div>
       </div>
     </div>

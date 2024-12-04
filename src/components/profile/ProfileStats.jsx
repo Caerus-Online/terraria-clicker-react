@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const ProfileStats = ({
   isOpen,
   onClose,
+  onOpenAuth,
   stats: {
     lifetimeClicks,
     lifetimeCoins,
@@ -57,7 +58,10 @@ const ProfileStats = ({
                 <div className="text-sm text-game-silver mt-2">
                   <span>Want to save progress? </span>
                   <button 
-                    onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
+                    onClick={() => {
+                      onClose();
+                      onOpenAuth();
+                    }}
                     className="text-game-highlight hover:underline"
                   >
                     Create an account or login
