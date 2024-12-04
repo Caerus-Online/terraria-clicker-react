@@ -19,6 +19,7 @@ import AuthModal from './components/auth/AuthModal';
 import { playerService } from './services/playerService';
 import LeaderboardPanel from './components/leaderboard/LeaderboardPanel';
 import { setupDatabase } from './scripts/setupDatabase';
+import { reattachImagesToUpgrades } from './data/imageData';
 
 // Make it available globally
 window.setupDatabase = setupDatabase;
@@ -441,11 +442,15 @@ function App() {
             setPrestigeLevel(progress.prestige_level || 0);
             setPrestigeRequirement(progress.prestige_requirement || 1000);
             
-            // Set upgrades
+            // Set upgrades with image reattachment
             if (upgrades) {
-              setTierUpgrades(upgrades.tier_upgrades || tierUpgradesArray);
-              setSwordUpgrades(upgrades.sword_upgrades || swordUpgradesArray);
-              setSummonUpgrades(upgrades.summon_upgrades || summonUpgradesArray);
+              const processedTierUpgrades = reattachImagesToUpgrades.tiers(upgrades.tier_upgrades || tierUpgradesArray);
+              const processedSwordUpgrades = reattachImagesToUpgrades.swords(upgrades.sword_upgrades || swordUpgradesArray);
+              const processedSummonUpgrades = reattachImagesToUpgrades.summons(upgrades.summon_upgrades || summonUpgradesArray);
+              
+              setTierUpgrades(processedTierUpgrades);
+              setSwordUpgrades(processedSwordUpgrades);
+              setSummonUpgrades(processedSummonUpgrades);
               setArtifacts(upgrades.artifacts || prestigeArtifacts);
             }
             
@@ -471,10 +476,17 @@ function App() {
           setPrestigeCurrency(loadFromLocalStorage('prestigeCurrency', 0));
           setPrestigeLevel(loadFromLocalStorage('prestigeLevel', 0));
           setPrestigeRequirement(loadFromLocalStorage('prestigeRequirement', 1000));
-          setTierUpgrades(loadFromLocalStorage('tierUpgrades', tierUpgradesArray));
-          setSwordUpgrades(loadFromLocalStorage('swordUpgrades', swordUpgradesArray));
-          setSummonUpgrades(loadFromLocalStorage('summonUpgrades', summonUpgradesArray));
+          
+          // Load and process upgrades with image reattachment
+          const loadedTierUpgrades = loadFromLocalStorage('tierUpgrades', tierUpgradesArray);
+          const loadedSwordUpgrades = loadFromLocalStorage('swordUpgrades', swordUpgradesArray);
+          const loadedSummonUpgrades = loadFromLocalStorage('summonUpgrades', summonUpgradesArray);
+          
+          setTierUpgrades(reattachImagesToUpgrades.tiers(loadedTierUpgrades));
+          setSwordUpgrades(reattachImagesToUpgrades.swords(loadedSwordUpgrades));
+          setSummonUpgrades(reattachImagesToUpgrades.summons(loadedSummonUpgrades));
           setArtifacts(loadFromLocalStorage('artifacts', prestigeArtifacts));
+          
           setLifetimeStats(loadFromLocalStorage('lifetimeStats', {
             clicks: 0,
             coins: 0,

@@ -1,20 +1,5 @@
 import React, { forwardRef, useEffect, useState } from 'react';
-import defaultSwordImage from '../../img/sword.png';
-import backgroundImage from '../../img/background.png';
-import logo from '../../img/logo.png';
-import clickIcon from '../../img/click-icon.png';
-import cpsIcon from '../../img/cpsIcon.png';
-import coinIcon from '../../img/coin-icon.png';
-import minion1Image from '../../img/minion1.png';
-import minion2Image from '../../img/minion2.png';
-import minion3Image from '../../img/minion3.png';
-import minion4Image from '../../img/minion4.png';
-import minion5Image from '../../img/minion5.png';
-import minion6Image from '../../img/minion6.png';
-import minion7Image from '../../img/minion7.png';
-import minion8Image from '../../img/minion8.png';
-import minion9Image from '../../img/minion9.png';
-import minion10Image from '../../img/minion10.png';
+import { gameImages, minionImages } from '../../data/imageData';
 import { formatNumber } from '../../utils/formatNumber';
 
 // Define keyframes outside component
@@ -34,22 +19,9 @@ const summonAnimationStyles = `
   }
 `;
 
-const minionImages = [
-  minion1Image,
-  minion2Image,
-  minion3Image,
-  minion4Image,
-  minion5Image,
-  minion6Image,
-  minion7Image,
-  minion8Image,
-  minion9Image,
-  minion10Image
-];
-
 const ClickerCore = forwardRef(({ 
   handleClick, 
-  swordImage = defaultSwordImage,
+  swordImage = gameImages.defaultSword,
   clickValue = 0,
   cps = 0,
   currentCoins = 0,
@@ -109,7 +81,7 @@ const ClickerCore = forwardRef(({
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{ 
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(${gameImages.background})`,
           imageRendering: 'pixelated'
         }} 
       />
@@ -117,7 +89,7 @@ const ClickerCore = forwardRef(({
       {/* Logo */}
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
         <img 
-          src={logo} 
+          src={gameImages.logo} 
           alt="Terraria Clicker" 
           className="h-16 object-contain"
         />
@@ -167,13 +139,13 @@ const ClickerCore = forwardRef(({
             <div className="grid grid-cols-2 gap-4">
               {/* Click Power */}
               <div className="flex items-center space-x-2">
-                <img src={clickIcon} alt="Click Power" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                <img src={gameImages.click} alt="Click Power" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                 <span className="text-game-gold">{formatNumber(clickValue)}</span>
               </div>
               
               {/* CPS */}
               <div className="flex items-center space-x-2">
-                <img src={cpsIcon} alt="CPS" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                <img src={gameImages.cps} alt="CPS" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                 <span className="text-game-silver">{formatNumber(cps)} per second</span>
               </div>
               
@@ -191,7 +163,7 @@ const ClickerCore = forwardRef(({
 
               {/* Current Coins */}
               <div className="flex items-center justify-center space-x-2 col-span-2">
-                <img src={coinIcon} alt="Coins" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                <img src={gameImages.coin} alt="Coins" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                 <span className="text-game-gold text-xl">{formatNumber(currentCoins)}</span>
               </div>
             </div>
