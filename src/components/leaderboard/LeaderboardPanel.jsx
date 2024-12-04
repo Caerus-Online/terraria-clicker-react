@@ -6,7 +6,14 @@ import prestigeIcon from '../../img/platnium.png';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, supabaseAdmin } from '../../lib/supabase';
 
-const LeaderboardPanel = ({ isOpen, onClose, onOpenAuth }) => {
+const LeaderboardPanel = ({ 
+  isOpen, 
+  onClose, 
+  onOpenAuth,
+  lifetimeStats,
+  prestigeLevel,
+  userAchievements
+}) => {
   const { user } = useAuth();
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +27,19 @@ const LeaderboardPanel = ({ isOpen, onClose, onOpenAuth }) => {
     setRefreshing(true);
     setError(null);
     try {
+      // First update the user's entry if logged in
+      if (user) {
+        await databaseService.updateLeaderboard(user.id, user.user_metadata?.username || 'Anonymous', {
+          totalCoins: lifetimeStats.coins,
+          prestigeLevel,
+          achievementsEarned: userAchievements.filter(a => a.earned).length
+        });
+      }
+
+      // Wait a moment for the update to propagate
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Then fetch the leaderboard
       const { data, error } = await supabase
         .from('leaderboard')
         .select('*')

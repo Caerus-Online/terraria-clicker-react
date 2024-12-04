@@ -1,11 +1,16 @@
 export const formatNumber = (num) => {
-  const suffixes = ['', 'k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td', 'Qad', 'Qu'];
-  let suffixIndex = 0;
+  if (!num) return '0';
+
+  const number = Number(num);
   
-  while (num >= 1000 && suffixIndex < suffixes.length - 1) {
-    num /= 1000;
-    suffixIndex++;
-  }
+  if (isNaN(number)) return '0';
+
+  const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc'];
+  const magnitude = Math.floor(Math.log10(Math.abs(number)) / 3);
   
-  return num.toFixed(1).replace(/\.0$/, '') + suffixes[suffixIndex];
+  if (magnitude < 1) return number.toFixed(2);
+  
+  const scaled = number / Math.pow(1000, magnitude);
+  
+  return `${scaled.toFixed(2)}${suffixes[magnitude]}`;
 }; 

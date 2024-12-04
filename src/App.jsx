@@ -94,6 +94,7 @@ function App() {
       clicks: prev.clicks + 1,
       coins: prev.coins + clickValue
     }));
+    setSessionClicks(prev => prev + clickValue);
     audioFunctions.current.playClickSound();
   };
 
@@ -119,10 +120,12 @@ function App() {
       audioFunctions.current.playPurchaseSound();
       setClicks(prev => prev - upgrade.cost);
       
+      const prestigeBonus = 1 + (prestigeLevel * 0.05); // 5% per level
+      
       const updatedTierUpgrades = tierUpgrades.map((tierUpgrade, i) => {
         if (i === index) {
           const newLevel = tierUpgrade.level + 1;
-          const baseClickValue = tierUpgrade.baseClicksProvided * swordMultiplier;
+          const baseClickValue = tierUpgrade.baseClicksProvided * swordMultiplier * prestigeBonus;
           const totalClickValue = baseClickValue * newLevel;
           
           return {
@@ -206,13 +209,17 @@ function App() {
     if (clicks >= upgrade.cost) {
       audioFunctions.current.playPurchaseSound();
       setClicks(clicks - upgrade.cost);
+      
+      const prestigeBonus = 1 + (prestigeLevel * 0.05); // 5% per level
+      
       const updatedSummonUpgrades = summonUpgrades.map((summonUpgrade, i) => {
         if (i === index) {
           const newLevel = upgrade.level + 1;
-          const newTotalCps = upgrade.baseCps * newLevel * swordMultiplier;
+          const baseCps = upgrade.baseCps * swordMultiplier * prestigeBonus;
+          const newTotalCps = baseCps * newLevel;
           return {
             ...summonUpgrade,
-            cpsProvided: upgrade.baseCps * swordMultiplier,
+            cpsProvided: baseCps,
             totalCps: newTotalCps,
             cost: upgrade.cost * 2,
             level: newLevel,
@@ -221,6 +228,7 @@ function App() {
         return summonUpgrade;
       });
       setSummonUpgrades(updatedSummonUpgrades);
+      
       const newCpsValue = updatedSummonUpgrades.reduce(
         (acc, curr) => acc + curr.totalCps,
         0
@@ -262,6 +270,7 @@ function App() {
       ...prev,
       prestigeCount: prev.prestigeCount + 1
     }));
+    setSessionClicks(0);
   };
 
   // Add artifacts state
@@ -346,10 +355,12 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       setClicks(prev => prev + cps);
-      setLifetimeStats(prev => ({
-        ...prev,
-        coins: prev.coins + cps
-      }));
+      if (cps > 0) {  // Only update lifetime stats if CPS is greater than 0
+        setLifetimeStats(prev => ({
+          ...prev,
+          coins: prev.coins + cps
+        }));
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, [cps]);
@@ -555,6 +566,20 @@ function App() {
   // Add leaderboard state
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
 
+  // Add state for prestige notification
+  const [showPrestigeNotification, setShowPrestigeNotification] = useState(false);
+
+  // Check for prestige availability in useEffect
+  useEffect(() => {
+    if (clicks >= prestigeRequirement && !showPrestigeNotification) {
+      setShowPrestigeNotification(true);
+      setTimeout(() => setShowPrestigeNotification(false), 5000);
+    }
+  }, [clicks, prestigeRequirement]);
+
+  // Add new state for session clicks
+  const [sessionClicks, setSessionClicks] = useState(0);
+
   // Only show loading screen on initial load
   if (initialLoading) {
     return <LoadingScreen />;
@@ -578,6 +603,7 @@ function App() {
           clickValue={formatNumber(clickValue)}
           cps={formatNumber(cps)}
           clicks={formatNumber(clicks)}
+          lifetimeClicks={sessionClicks}
           swordMultiplier={swordMultiplier}
           prestigeLevel={prestigeLevel}
           ref={clickerRef}
@@ -605,6 +631,19 @@ function App() {
         effectsVolume={effectsVolume}
         setEffectsVolume={setEffectsVolume}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        setClicks={setClicks}
+        setClickValue={setClickValue}
+        setCps={setCps}
+        setPrestigeCurrency={setPrestigeCurrency}
+        setPrestigeLevel={setPrestigeLevel}
+        setPrestigeRequirement={setPrestigeRequirement}
+        setTierUpgrades={setTierUpgrades}
+        setSwordUpgrades={setSwordUpgrades}
+        setSummonUpgrades={setSummonUpgrades}
+        setArtifacts={setArtifacts}
+        setUserAchievements={setUserAchievements}
+        setLifetimeStats={setLifetimeStats}
+        setSessionClicks={setSessionClicks}
       />
 
       <AudioController 
@@ -667,7 +706,19 @@ function App() {
           isOpen={isLeaderboardOpen}
           onClose={() => setIsLeaderboardOpen(false)}
           onOpenAuth={() => setIsAuthModalOpen(true)}
+          lifetimeStats={lifetimeStats}
+          prestigeLevel={prestigeLevel}
+          userAchievements={userAchievements}
         />
+      )}
+
+      {showPrestigeNotification && (
+        <div className="fixed bottom-4 right-4 bg-purple-600 text-white p-4 rounded-lg shadow-lg animate-bounce z-50">
+          <div className="flex items-center space-x-2">
+            <span className="material-icons">stars</span>
+            <span>Prestige Available!</span>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import { playerService } from '../../services/playerService';
 import { achievements } from '../../data/achievementData';
 import { tierUpgradesArray, swordUpgradesArray, summonUpgradesArray } from '../../data/upgradeData';
 import { prestigeArtifacts } from '../../data/prestigeArtifacts';
+import { databaseService } from '../../services/databaseService';
 
 const SettingsMenu = ({ 
   isOpen, 
@@ -13,7 +14,20 @@ const SettingsMenu = ({
   setBgVolume, 
   effectsVolume, 
   setEffectsVolume,
-  onOpenAuth
+  onOpenAuth,
+  setClicks,
+  setClickValue,
+  setCps,
+  setPrestigeCurrency,
+  setPrestigeLevel,
+  setPrestigeRequirement,
+  setTierUpgrades,
+  setSwordUpgrades,
+  setSummonUpgrades,
+  setArtifacts,
+  setUserAchievements,
+  setLifetimeStats,
+  setSessionClicks
 }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -47,98 +61,35 @@ const SettingsMenu = ({
       setLoading(true);
 
       if (user) {
-        // First delete all data
-        await Promise.all([
-          supabase.from('game_progress').delete().eq('user_id', user.id),
-          supabase.from('upgrades').delete().eq('user_id', user.id),
-          supabase.from('achievements').delete().eq('user_id', user.id),
-          supabase.from('lifetime_stats').delete().eq('user_id', user.id),
-          supabase.from('leaderboard').delete().eq('user_id', user.id)
-        ]);
-
-        // Then initialize with default values
-        await Promise.all([
-          // Game progress defaults
-          supabase.from('game_progress').insert([{
-            user_id: user.id,
-            clicks: 0,
-            click_value: 1,
-            cps: 0,
-            prestige_currency: 0,
-            prestige_level: 0,
-            prestige_requirement: 1000,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }]),
-
-          // Upgrades defaults with proper structure
-          supabase.from('upgrades').insert([{
-            user_id: user.id,
-            tier_upgrades: tierUpgradesArray.map(upgrade => ({ 
-              ...upgrade, 
-              level: 0, 
-              purchased: false,
-              clicksProvided: 0,
-              totalClicksProvided: 0
-            })),
-            sword_upgrades: swordUpgradesArray.map(upgrade => ({ 
-              ...upgrade, 
-              purchased: false 
-            })),
-            summon_upgrades: summonUpgradesArray.map(upgrade => ({ 
-              ...upgrade, 
-              level: 0,
-              purchased: false,
-              cpsProvided: 0,
-              totalCps: 0
-            })),
-            artifacts: prestigeArtifacts.map(artifact => ({ 
-              ...artifact, 
-              level: 0 
-            })),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }]),
-
-          // Achievements with proper structure
-          supabase.from('achievements').insert([{
-            user_id: user.id,
-            achievements: achievements.map(achievement => ({
-              ...achievement,
-              earned: false,
-              progress: 0
-            })),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }]),
-
-          // Reset lifetime stats
-          supabase.from('lifetime_stats').insert([{
-            user_id: user.id,
-            total_clicks: 0,
-            total_coins: 0,
-            total_prestiges: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }]),
-
-          // Reset leaderboard entry
-          supabase.from('leaderboard').insert([{
-            user_id: user.id,
-            username: user.user_metadata?.username || 'Anonymous',
-            total_coins: 0,
-            prestige_level: 0,
-            achievements_earned: 0,
-            updated_at: new Date().toISOString()
-          }])
-        ]);
+        // Clear database data first
+        await databaseService.clearUserData(user.id);
       }
 
-      // Clear localStorage
+      // Clear ALL localStorage
       localStorage.clear();
 
-      // Force a full page reload
+      // Reset ALL state to initial values
+      setClicks(0);
+      setClickValue(1);
+      setCps(0);
+      setPrestigeCurrency(0);
+      setPrestigeLevel(0);
+      setPrestigeRequirement(1000);
+      setTierUpgrades(tierUpgradesArray);
+      setSwordUpgrades(swordUpgradesArray);
+      setSummonUpgrades(summonUpgradesArray);
+      setArtifacts(prestigeArtifacts);
+      setUserAchievements(achievements.map(a => ({ ...a, earned: false })));
+      setLifetimeStats({
+        clicks: 0,
+        coins: 0,
+        prestigeCount: 0
+      });
+      setSessionClicks(0);
+
+      // Force a complete page reload to reset all intervals and state
       window.location.reload();
+
     } catch (error) {
       console.error('Error clearing data:', error);
       alert('Error clearing data. Please try again.');

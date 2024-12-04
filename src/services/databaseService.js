@@ -567,5 +567,55 @@ export const databaseService = {
     }
 
     return { data };
+  },
+
+  // Add this method to databaseService
+  async clearUserData(userId) {
+    try {
+      // Delete all user data
+      await Promise.all([
+        supabase.from('game_progress').delete().eq('user_id', userId),
+        supabase.from('upgrades').delete().eq('user_id', userId),
+        supabase.from('achievements').delete().eq('user_id', userId),
+        supabase.from('lifetime_stats').delete().eq('user_id', userId),
+        supabase.from('leaderboard').delete().eq('user_id', userId),
+        supabase.from('prestige_upgrades').delete().eq('user_id', userId),
+        supabase.from('artifacts').delete().eq('user_id', userId)
+      ]);
+
+      // Initialize with default values
+      await Promise.all([
+        this.saveGameProgress(userId, {
+          clicks: 0,
+          clickValue: 1,
+          cps: 0,
+          prestigeCurrency: 0,
+          prestigeLevel: 0,
+          prestigeRequirement: 1000
+        }),
+        this.saveUpgrades(userId, {
+          tierUpgrades: tierUpgradesArray,
+          swordUpgrades: swordUpgradesArray,
+          summonUpgrades: summonUpgradesArray,
+          artifacts: prestigeArtifacts
+        }),
+        this.saveAchievements(userId, achievements.map(a => ({ ...a, earned: false }))),
+        this.saveLifetimeStats(userId, {
+          clicks: 0,
+          coins: 0,
+          prestigeCount: 0
+        }),
+        this.updateLeaderboard(userId, 'Anonymous', {
+          totalCoins: 0,
+          prestigeLevel: 0,
+          achievementsEarned: 0
+        })
+      ]);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error clearing user data:', error);
+      throw error;
+    }
   }
 }; 

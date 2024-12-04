@@ -10,11 +10,12 @@ import { formatNumber } from '../../utils/formatNumber';
 const ClickerCore = forwardRef(({ 
   handleClick, 
   swordImage = defaultSwordImage,
-  clickValue,
-  cps,
-  clicks,
-  swordMultiplier,
-  prestigeLevel
+  clickValue = 0,
+  cps = 0,
+  clicks = 0,
+  lifetimeClicks = 0,
+  swordMultiplier = 1,
+  prestigeLevel = 0
 }, ref) => {
 
   return (
@@ -60,19 +61,25 @@ const ClickerCore = forwardRef(({
               {/* Click Power */}
               <div className="flex items-center space-x-2">
                 <img src={clickIcon} alt="Click Power" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
-                <span className="text-game-gold">{clickValue}</span>
+                <span className="text-game-gold">{formatNumber(clickValue)}</span>
               </div>
               
               {/* CPS */}
               <div className="flex items-center space-x-2">
                 <img src={cpsIcon} alt="CPS" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
-                <span className="text-game-silver">{cps} per second</span>
+                <span className="text-game-silver">{formatNumber(cps)} per second</span>
               </div>
               
               {/* Multiplier */}
               <div className="flex items-center space-x-2">
-                <span className="text-game-highlight">x{swordMultiplier}</span>
+                <span className="text-game-highlight">x{formatNumber(swordMultiplier)}</span>
                 <span className="text-sm">Multiplier</span>
+              </div>
+              
+              {/* Total Clicks */}
+              <div className="flex items-center space-x-2">
+                <img src={clickIcon} alt="Total Clicks" className="w-6 h-6 opacity-50" style={{ imageRendering: 'pixelated' }} />
+                <span className="text-game-text text-sm">Total: {formatNumber(clicks)}</span>
               </div>
               
               {/* Prestige Level */}
@@ -80,12 +87,12 @@ const ClickerCore = forwardRef(({
                 <span className="text-purple-400">Lv.{prestigeLevel}</span>
                 <span className="text-sm">Prestige</span>
               </div>
-            </div>
 
-            {/* Total Coins */}
-            <div className="mt-4 flex items-center justify-center space-x-2">
-              <img src={coinIcon} alt="Coins" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
-              <span className="text-game-gold text-xl">{clicks}</span>
+              {/* Total Coins */}
+              <div className="flex items-center justify-center space-x-2">
+                <img src={coinIcon} alt="Coins" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
+                <span className="text-game-gold text-xl">{formatNumber(clicks)}</span>
+              </div>
             </div>
           </div>
         </div>
