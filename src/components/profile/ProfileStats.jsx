@@ -43,6 +43,30 @@ const ProfileStats = ({
 
         {/* Stats Grid */}
         <div className="modal-content p-6 grid grid-cols-1 gap-4">
+          {/* Player Info - Moved to top */}
+          <div className="bg-black bg-opacity-50 rounded-lg p-4">
+            <h3 className="font-game text-game-highlight mb-4">Player Info</h3>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-white">Username:</span>
+                <span className="text-game-highlight">
+                  {user?.user_metadata?.username || 'Anonymous'}
+                </span>
+              </div>
+              {!user && (
+                <div className="text-sm text-game-silver mt-2">
+                  <span>Want to save progress? </span>
+                  <button 
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
+                    className="text-game-highlight hover:underline"
+                  >
+                    Create an account or login
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Lifetime Stats */}
           <div className="bg-black bg-opacity-50 rounded-lg p-4">
             <h3 className="font-game text-game-highlight mb-4">Lifetime Stats</h3>
@@ -97,19 +121,6 @@ const ProfileStats = ({
               <div className="flex items-center justify-between">
                 <span className="text-white">Achievements:</span>
                 <span className="text-yellow-400">{achievementsEarned}/{totalAchievements}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Player Info */}
-          <div className="bg-black bg-opacity-50 rounded-lg p-4">
-            <h3 className="font-game text-game-highlight mb-4">Player Info</h3>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-white">Username:</span>
-                <span className="text-game-highlight">
-                  {user?.user_metadata?.username || 'Anonymous'}
-                </span>
               </div>
             </div>
           </div>

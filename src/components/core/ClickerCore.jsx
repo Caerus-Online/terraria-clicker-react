@@ -5,10 +5,16 @@ import logo from '../../img/logo.png';
 import clickIcon from '../../img/click-icon.png';
 import cpsIcon from '../../img/cpsIcon.png';
 import coinIcon from '../../img/coin-icon.png';
-import summon1Image from '../../img/summon1.png';
-import summon2Image from '../../img/summon2.png';
-import summon3Image from '../../img/summon3.png';
-import summon4Image from '../../img/summon4.png';
+import minion1Image from '../../img/minion1.png';
+import minion2Image from '../../img/minion2.png';
+import minion3Image from '../../img/minion3.png';
+import minion4Image from '../../img/minion4.png';
+import minion5Image from '../../img/minion5.png';
+import minion6Image from '../../img/minion6.png';
+import minion7Image from '../../img/minion7.png';
+import minion8Image from '../../img/minion8.png';
+import minion9Image from '../../img/minion9.png';
+import minion10Image from '../../img/minion10.png';
 import { formatNumber } from '../../utils/formatNumber';
 
 // Define keyframes outside component
@@ -18,18 +24,28 @@ const summonAnimationStyles = `
     50% { transform: translate(-50%, -50%) translateY(-5px) scale(1.1); }
     100% { transform: translate(-50%, -50%) scale(1); }
   }
-  @keyframes summonRotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  @keyframes summonJoltRight {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(calc(-50% + 10px), -50%) scale(1.05); }
+  }
+  @keyframes summonJoltLeft {
+    0%, 100% { transform: translate(-50%, -50%) scaleX(-1); }
+    50% { transform: translate(calc(-50% - 10px), -50%) scaleX(-1) scale(1.05); }
   }
 `;
 
-const summonImages = {
-  0: summon1Image,
-  1: summon2Image,
-  2: summon3Image,
-  3: summon4Image
-};
+const minionImages = [
+  minion1Image,
+  minion2Image,
+  minion3Image,
+  minion4Image,
+  minion5Image,
+  minion6Image,
+  minion7Image,
+  minion8Image,
+  minion9Image,
+  minion10Image
+];
 
 const ClickerCore = forwardRef(({ 
   handleClick, 
@@ -45,16 +61,26 @@ const ClickerCore = forwardRef(({
 }, ref) => {
   const [summonElements, setSummonElements] = useState([]);
 
-  // Function to create summon positions in a circle
+  // Function to create static summon positions
   useEffect(() => {
     // Only create elements for summons with level > 0
     const activeSummons = summonUpgrades.filter(summon => summon.level > 0);
     if (activeSummons.length > 0) {
       const newSummons = activeSummons.map((summon, index) => {
-        const angle = (index / activeSummons.length) * Math.PI * 2;
-        const distance = 140;
-        const x = Math.cos(angle) * distance;
-        const y = Math.sin(angle) * distance;
+        // Calculate position based on index
+        const side = index % 2 === 0 ? -1 : 1; // Alternate between left (-1) and right (1)
+        const position = Math.floor(index / 2); // 0-4 for each side
+        const baseDistance = 135; // Base distance from sword
+        const spacing = 40; // Vertical spacing between minions
+        
+        // Calculate x and y positions
+        const x = side * baseDistance;
+        const y = (position - 2) * spacing; // Center vertically with -2 offset
+        
+        // Determine animation based on side
+        const joltAnimation = side === -1 
+          ? 'summonJoltLeft 1s ease-in-out infinite'
+          : 'summonJoltRight 1s ease-in-out infinite';
         
         return {
           id: index,
@@ -64,7 +90,7 @@ const ClickerCore = forwardRef(({
             top: `calc(50% + ${y}px)`,
             position: 'absolute',
             transform: 'translate(-50%, -50%)',
-            animation: 'summonFloat 2s ease-in-out infinite'
+            animation: joltAnimation
           }
         };
       });
@@ -101,11 +127,8 @@ const ClickerCore = forwardRef(({
       <div className="relative z-10 flex flex-col items-center justify-center flex-1">
         {/* Sword container with summons */}
         <div className="relative w-48 h-48">
-          {/* Summon circle container - slowly rotating */}
-          <div 
-            className="absolute inset-0" 
-            style={{ animation: 'summonRotate 20s linear infinite' }}
-          >
+          {/* Static summon container */}
+          <div className="absolute inset-0">
             {/* Summon sprites */}
             {summonElements.map(summon => (
               <div
@@ -114,8 +137,8 @@ const ClickerCore = forwardRef(({
                 style={summon.style}
               >
                 <img 
-                  src={summonImages[summon.imageIndex]}
-                  alt={`Summon ${summon.imageIndex + 1}`}
+                  src={minionImages[summon.imageIndex]}
+                  alt={`Minion ${summon.imageIndex + 1}`}
                   className="w-full h-full object-contain"
                   style={{ imageRendering: 'pixelated' }}
                 />
@@ -178,14 +201,14 @@ const ClickerCore = forwardRef(({
           {showPrestigeNotification && (
             <div 
               onClick={onPrestigeNotificationClick}
-              className="mt-4 bg-purple-700 rounded-lg p-3 
+              className="mt-4 bg-purple-700 bg-opacity-95 rounded-lg p-3 
                          text-center cursor-pointer transform hover:scale-105 transition-transform duration-200
-                         animate-pulse hover:animate-none shadow-lg hover:bg-purple-600"
+                         shadow-lg hover:bg-purple-600 border-2 border-purple-400"
             >
               <div className="flex items-center justify-center space-x-2">
-                <span className="material-icons text-purple-100">stars</span>
-                <span className="text-purple-100 font-bold">Prestige Available!</span>
-                <span className="material-icons text-purple-100">stars</span>
+                <span className="material-icons text-white">stars</span>
+                <span className="text-white font-bold">Prestige Available!</span>
+                <span className="material-icons text-white">stars</span>
               </div>
             </div>
           )}

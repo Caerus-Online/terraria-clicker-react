@@ -161,7 +161,7 @@ const AuthModal = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 px-4 bg-game-highlight hover:bg-opacity-80 text-white rounded font-game transition-colors"
+              className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-game transition-colors shadow-md"
             >
               {loading ? 'Loading...' : isLogin ? 'Login' : 'Register'}
             </button>
@@ -170,7 +170,7 @@ const AuthModal = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-white hover:text-game-highlight text-sm font-game"
+                className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-game transition-colors shadow-md mt-4"
               >
                 {isLogin ? 'Need an account?' : 'Already have an account?'}
               </button>
@@ -179,7 +179,7 @@ const AuthModal = ({ isOpen, onClose }) => {
 
           <button
             onClick={onClose}
-            className="w-full mt-3 py-2 px-4 bg-game-accent hover:bg-opacity-80 text-white rounded font-game transition-colors text-sm"
+            className="w-full mt-4 py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-game transition-colors shadow-md"
           >
             Continue Without Account
           </button>
