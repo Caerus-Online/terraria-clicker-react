@@ -3,7 +3,7 @@ import coinIcon from '../../img/coin-icon.png';
 import cpsIcon from '../../img/cpsIcon.png';
 import { formatNumber } from '../../utils/formatNumber';
 
-const SummonUpgrades = ({ upgrades, onUpgrade, clicks }) => {
+const SummonUpgrades = ({ upgrades, onUpgrade, coins }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {upgrades.map((upgrade, index) => (
@@ -12,12 +12,12 @@ const SummonUpgrades = ({ upgrades, onUpgrade, clicks }) => {
           className={`
             bg-black bg-opacity-50 backdrop-blur-sm rounded-lg p-4 
             border transition-all duration-200 cursor-pointer
-            ${clicks >= upgrade.cost 
+            ${coins >= upgrade.cost 
               ? 'border-game-highlight hover:bg-opacity-70 transform hover:scale-105' 
               : 'border-game-accent opacity-75 cursor-not-allowed'
             }
           `}
-          onClick={() => clicks >= upgrade.cost && onUpgrade(index)}
+          onClick={() => coins >= upgrade.cost && onUpgrade(index)}
         >
           <div className="flex items-center space-x-4">
             {/* Summon Image */}

@@ -12,10 +12,11 @@ const ClickerCore = forwardRef(({
   swordImage = defaultSwordImage,
   clickValue = 0,
   cps = 0,
-  clicks = 0,
-  lifetimeClicks = 0,
+  currentCoins = 0,
   swordMultiplier = 1,
-  prestigeLevel = 0
+  prestigeLevel = 0,
+  showPrestigeNotification = false,
+  onPrestigeNotificationClick
 }, ref) => {
 
   return (
@@ -76,25 +77,35 @@ const ClickerCore = forwardRef(({
                 <span className="text-sm">Multiplier</span>
               </div>
               
-              {/* Total Clicks */}
-              <div className="flex items-center space-x-2">
-                <img src={clickIcon} alt="Total Clicks" className="w-6 h-6 opacity-50" style={{ imageRendering: 'pixelated' }} />
-                <span className="text-game-text text-sm">Total: {formatNumber(clicks)}</span>
-              </div>
-              
               {/* Prestige Level */}
               <div className="flex items-center space-x-2">
                 <span className="text-purple-400">Lv.{prestigeLevel}</span>
                 <span className="text-sm">Prestige</span>
               </div>
 
-              {/* Total Coins */}
-              <div className="flex items-center justify-center space-x-2">
+              {/* Current Coins */}
+              <div className="flex items-center justify-center space-x-2 col-span-2">
                 <img src={coinIcon} alt="Coins" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
-                <span className="text-game-gold text-xl">{formatNumber(clicks)}</span>
+                <span className="text-game-gold text-xl">{formatNumber(currentCoins)}</span>
               </div>
             </div>
           </div>
+
+          {/* Prestige Notification */}
+          {showPrestigeNotification && (
+            <div 
+              onClick={onPrestigeNotificationClick}
+              className="mt-4 bg-purple-800 rounded-lg p-3 border border-purple-400 
+                         text-center cursor-pointer transform hover:scale-105 transition-transform duration-200
+                         animate-pulse hover:animate-none shadow-lg"
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <span className="material-icons text-purple-200">stars</span>
+                <span className="text-purple-200 font-bold">Prestige Available!</span>
+                <span className="material-icons text-purple-200">stars</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

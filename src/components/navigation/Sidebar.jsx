@@ -19,7 +19,7 @@ const Sidebar = ({
             <span className="material-icons">person</span>
           </button>
           <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black bg-opacity-75 text-white text-sm rounded 
-                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">
             View Profile Stats
           </div>
         </div>
@@ -32,7 +32,7 @@ const Sidebar = ({
             <span className="material-icons">store</span>
           </button>
           <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black bg-opacity-75 text-white text-sm rounded 
-                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">
             Purchase Upgrades
           </div>
         </div>
@@ -45,7 +45,7 @@ const Sidebar = ({
             <span className="material-icons">stars</span>
           </button>
           <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black bg-opacity-75 text-white text-sm rounded 
-                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">
             Prestige & Artifacts
           </div>
         </div>
@@ -58,7 +58,7 @@ const Sidebar = ({
             <span className="material-icons">emoji_events</span>
           </button>
           <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black bg-opacity-75 text-white text-sm rounded 
-                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">
             View Achievements
           </div>
         </div>
@@ -71,7 +71,7 @@ const Sidebar = ({
             <span className="material-icons">leaderboard</span>
           </button>
           <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black bg-opacity-75 text-white text-sm rounded 
-                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">
             Global Leaderboard
           </div>
         </div>
@@ -84,7 +84,7 @@ const Sidebar = ({
             <span className="material-icons">settings</span>
           </button>
           <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-black bg-opacity-75 text-white text-sm rounded 
-                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden md:block">
             Game Settings
           </div>
         </div>

@@ -63,7 +63,7 @@ const PrestigeShop = ({
               Prestige now to gain {formatNumber(potentialGain)} prestige coins
             </p>
             <p className="text-white font-game text-sm mb-4">
-              Requirement: {formatNumber(prestigeRequirement)} clicks
+              Requirement: {formatNumber(prestigeRequirement)} coins
             </p>
             <button
               className={`

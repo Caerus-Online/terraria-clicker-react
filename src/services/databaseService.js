@@ -102,14 +102,12 @@ export const databaseService = {
     try {
       // Load each type of data separately to avoid relationship issues
       const [
-        userProfile,
         gameProgress,
         upgrades,
         achievements,
         lifetimeStats,
         leaderboard
       ] = await Promise.all([
-        supabase.from('users').select('*').eq('id', userId).single(),
         supabase.from('game_progress').select('*').eq('user_id', userId).single(),
         supabase.from('upgrades').select('*').eq('user_id', userId).single(),
         supabase.from('achievements').select('*').eq('user_id', userId).single(),
@@ -117,9 +115,9 @@ export const databaseService = {
         supabase.from('leaderboard').select('*').eq('user_id', userId).single()
       ]);
 
-      // If any required data is missing, initialize it
+      // Initialize missing data with defaults
       if (!gameProgress.data) {
-        await this.saveGameProgress(userId, {
+        const { data } = await this.saveGameProgress(userId, {
           clicks: 0,
           clickValue: 1,
           cps: 0,
@@ -127,41 +125,45 @@ export const databaseService = {
           prestigeLevel: 0,
           prestigeRequirement: 1000
         });
+        gameProgress.data = data;
       }
 
       if (!upgrades.data) {
-        await this.saveUpgrades(userId, {
-          tierUpgrades: [],
-          swordUpgrades: [],
-          summonUpgrades: [],
-          artifacts: []
+        const { data } = await this.saveUpgrades(userId, {
+          tierUpgrades: tierUpgradesArray,
+          swordUpgrades: swordUpgradesArray,
+          summonUpgrades: summonUpgradesArray,
+          artifacts: prestigeArtifacts
         });
+        upgrades.data = data;
       }
 
       if (!achievements.data) {
-        await this.saveAchievements(userId, []);
+        const { data } = await this.saveAchievements(userId, achievements);
+        achievements.data = data;
       }
 
       if (!lifetimeStats.data) {
-        await this.saveLifetimeStats(userId, {
+        const { data } = await this.saveLifetimeStats(userId, {
           clicks: 0,
           coins: 0,
           prestigeCount: 0
         });
+        lifetimeStats.data = data;
       }
 
       if (!leaderboard.data) {
-        await this.updateLeaderboard(userId, userProfile.data.username, {
+        const { data } = await this.updateLeaderboard(userId, 'Anonymous', {
           totalCoins: 0,
           prestigeLevel: 0,
           achievementsEarned: 0
         });
+        leaderboard.data = data;
       }
 
       // Return combined data
       return {
         data: {
-          profile: userProfile.data,
           progress: gameProgress.data,
           upgrades: upgrades.data,
           achievements: achievements.data,
@@ -190,49 +192,71 @@ export const databaseService = {
   },
 
   // Game Progress
-  async saveGameProgress(userId, gameState) {
-    const { clicks, clickValue, cps, prestigeCurrency, prestigeLevel, prestigeRequirement } = gameState;
-    
-    return await supabase
-      .from('game_progress')
-      .upsert([{
-        user_id: userId,
-        clicks: parseInt(clicks) || 0,
-        click_value: parseInt(clickValue) || 1,
-        cps: parseInt(cps) || 0,
-        prestige_currency: parseInt(prestigeCurrency) || 0,
-        prestige_level: parseInt(prestigeLevel) || 0,
-        prestige_requirement: parseInt(prestigeRequirement) || 1000,
-        updated_at: new Date().toISOString()
-      }], {
-        onConflict: 'user_id'
-      })
-      .select()
-      .single();
+  async saveGameProgress(userId, progress) {
+    try {
+      const { data, error } = await supabase
+        .from('game_progress')
+        .upsert([{
+          user_id: userId,
+          clicks: Math.floor(Number(progress.clicks) || 0),
+          click_value: Math.floor(Number(progress.click_value) || 1),
+          cps: Math.floor(Number(progress.cps) || 0),
+          prestige_currency: Math.floor(Number(progress.prestige_currency) || 0),
+          prestige_level: Math.floor(Number(progress.prestige_level) || 0),
+          prestige_requirement: Math.floor(Number(progress.prestige_requirement) || 1000),
+          updated_at: new Date().toISOString()
+        }], {
+          onConflict: 'user_id'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data };
+    } catch (error) {
+      console.error('Error saving game progress:', error);
+      throw error;
+    }
   },
 
   async loadGameProgress(userId) {
-    const { data, error } = await supabase
-      .from('game_progress')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('game_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-    if (error && error.code !== 'PGRST116') throw error;
+      if (error && error.code !== 'PGRST116') throw error;
 
-    if (!data) {
-      // Create initial progress
-      return this.saveGameProgress(userId, {
-        clicks: 0,
-        clickValue: 1,
-        cps: 0,
-        prestigeCurrency: 0,
-        prestigeLevel: 0,
-        prestigeRequirement: 1000
-      });
+      if (!data) {
+        // Create initial progress with proper number conversion
+        return this.saveGameProgress(userId, {
+          clicks: 0,
+          click_value: 1,
+          cps: 0,
+          prestige_currency: 0,
+          prestige_level: 0,
+          prestige_requirement: 1000
+        });
+      }
+
+      // Ensure all values are proper integers
+      return {
+        data: {
+          ...data,
+          clicks: Math.floor(Number(data.clicks) || 0),
+          click_value: Math.floor(Number(data.click_value) || 1),
+          cps: Math.floor(Number(data.cps) || 0),
+          prestige_currency: Math.floor(Number(data.prestige_currency) || 0),
+          prestige_level: Math.floor(Number(data.prestige_level) || 0),
+          prestige_requirement: Math.floor(Number(data.prestige_requirement) || 1000)
+        }
+      };
+    } catch (error) {
+      console.error('Error loading game progress:', error);
+      throw error;
     }
-
-    return { data };
   },
 
   // Upgrades
@@ -411,37 +435,21 @@ export const databaseService = {
         .from('lifetime_stats')
         .upsert([{
           user_id: userId,
-          total_clicks: parseInt(stats.clicks) || 0,
-          total_coins: parseInt(stats.coins) || 0,
-          total_prestiges: parseInt(stats.prestigeCount) || 0,
+          total_clicks: Math.floor(Number(stats.clicks) || 0),
+          total_coins: Math.floor(Number(stats.coins) || 0),
+          total_prestiges: Math.floor(Number(stats.prestigeCount) || 0),
           updated_at: new Date().toISOString()
         }], {
-          onConflict: 'user_id',
-          returning: 'minimal'
-        });
+          onConflict: 'user_id'
+        })
+        .select()
+        .single();
 
       if (error) throw error;
       return { data };
     } catch (error) {
       console.error('Error saving lifetime stats:', error);
-      // Try update if insert failed
-      try {
-        const { data, error: updateError } = await supabase
-          .from('lifetime_stats')
-          .update({
-            total_clicks: parseInt(stats.clicks) || 0,
-            total_coins: parseInt(stats.coins) || 0,
-            total_prestiges: parseInt(stats.prestigeCount) || 0,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId);
-
-        if (updateError) throw updateError;
-        return { data };
-      } catch (updateError) {
-        console.error('Error updating lifetime stats:', updateError);
-        throw updateError;
-      }
+      throw error;
     }
   },
 
@@ -451,30 +459,28 @@ export const databaseService = {
         .from('lifetime_stats')
         .select('*')
         .eq('user_id', userId)
-        .maybeSingle();
+        .single();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') throw error;
 
       if (!data) {
-        // Create initial stats
-        const { data: newData, error: insertError } = await supabase
-          .from('lifetime_stats')
-          .insert([{
-            user_id: userId,
-            total_clicks: 0,
-            total_coins: 0,
-            total_prestiges: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }])
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-        return { data: newData };
+        // Create initial stats with proper number conversion
+        return this.saveLifetimeStats(userId, {
+          clicks: 0,
+          coins: 0,
+          prestigeCount: 0
+        });
       }
 
-      return { data };
+      // Ensure all values are proper integers
+      return {
+        data: {
+          ...data,
+          total_clicks: Math.floor(Number(data.total_clicks) || 0),
+          total_coins: Math.floor(Number(data.total_coins) || 0),
+          total_prestiges: Math.floor(Number(data.total_prestiges) || 0)
+        }
+      };
     } catch (error) {
       console.error('Error loading lifetime stats:', error);
       throw error;
@@ -489,13 +495,12 @@ export const databaseService = {
         .upsert([{
           user_id: userId,
           username,
-          total_coins: stats.totalCoins || 0,
-          prestige_level: stats.prestigeLevel || 0,
-          achievements_earned: stats.achievementsEarned || 0,
+          total_coins: Math.floor(Number(stats.totalCoins) || 0),
+          prestige_level: Math.floor(Number(stats.prestigeLevel) || 0),
+          achievements_earned: Math.floor(Number(stats.achievementsEarned) || 0),
           updated_at: new Date().toISOString()
         }], {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
+          onConflict: 'user_id'
         })
         .select()
         .single();
@@ -572,45 +577,35 @@ export const databaseService = {
   // Add this method to databaseService
   async clearUserData(userId) {
     try {
-      // Delete all user data
-      await Promise.all([
-        supabase.from('game_progress').delete().eq('user_id', userId),
-        supabase.from('upgrades').delete().eq('user_id', userId),
-        supabase.from('achievements').delete().eq('user_id', userId),
-        supabase.from('lifetime_stats').delete().eq('user_id', userId),
-        supabase.from('leaderboard').delete().eq('user_id', userId),
-        supabase.from('prestige_upgrades').delete().eq('user_id', userId),
-        supabase.from('artifacts').delete().eq('user_id', userId)
-      ]);
+      // Clear game progress
+      await supabase
+        .from('game_progress')
+        .delete()
+        .eq('user_id', userId);
 
-      // Initialize with default values
-      await Promise.all([
-        this.saveGameProgress(userId, {
-          clicks: 0,
-          clickValue: 1,
-          cps: 0,
-          prestigeCurrency: 0,
-          prestigeLevel: 0,
-          prestigeRequirement: 1000
-        }),
-        this.saveUpgrades(userId, {
-          tierUpgrades: tierUpgradesArray,
-          swordUpgrades: swordUpgradesArray,
-          summonUpgrades: summonUpgradesArray,
-          artifacts: prestigeArtifacts
-        }),
-        this.saveAchievements(userId, achievements.map(a => ({ ...a, earned: false }))),
-        this.saveLifetimeStats(userId, {
-          clicks: 0,
-          coins: 0,
-          prestigeCount: 0
-        }),
-        this.updateLeaderboard(userId, 'Anonymous', {
-          totalCoins: 0,
-          prestigeLevel: 0,
-          achievementsEarned: 0
-        })
-      ]);
+      // Clear upgrades
+      await supabase
+        .from('upgrades')
+        .delete()
+        .eq('user_id', userId);
+
+      // Clear achievements
+      await supabase
+        .from('achievements')
+        .delete()
+        .eq('user_id', userId);
+
+      // Clear lifetime stats
+      await supabase
+        .from('lifetime_stats')
+        .delete()
+        .eq('user_id', userId);
+
+      // Clear leaderboard entry
+      await supabase
+        .from('leaderboard')
+        .delete()
+        .eq('user_id', userId);
 
       return { success: true };
     } catch (error) {

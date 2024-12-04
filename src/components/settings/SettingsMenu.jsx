@@ -1,21 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
-import { playerService } from '../../services/playerService';
-import { achievements } from '../../data/achievementData';
-import { tierUpgradesArray, swordUpgradesArray, summonUpgradesArray } from '../../data/upgradeData';
-import { prestigeArtifacts } from '../../data/prestigeArtifacts';
 import { databaseService } from '../../services/databaseService';
+import { supabase } from '../../lib/supabase';
 
 const SettingsMenu = ({ 
   isOpen, 
   onClose, 
-  bgVolume, 
-  setBgVolume, 
-  effectsVolume, 
+  bgVolume,
+  setBgVolume,
+  effectsVolume,
   setEffectsVolume,
   onOpenAuth,
-  setClicks,
+  setCurrentCoins,
   setClickValue,
   setCps,
   setPrestigeCurrency,
@@ -27,15 +23,19 @@ const SettingsMenu = ({
   setArtifacts,
   setUserAchievements,
   setLifetimeStats,
-  setSessionClicks
+  tierUpgradesArray,
+  swordUpgradesArray,
+  summonUpgradesArray,
+  prestigeArtifacts,
+  achievements
 }) => {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
-      localStorage.clear();
+      const authKeys = ['supabase.auth.token'];
+      authKeys.forEach(key => localStorage.removeItem(key));
       window.location.href = '/';
     } catch (error) {
       console.error('Error logging out:', error);
@@ -58,43 +58,39 @@ const SettingsMenu = ({
     if (!confirmed) return;
 
     try {
-      setLoading(true);
-
       if (user) {
-        // Clear database data first
         await databaseService.clearUserData(user.id);
       }
 
-      // Clear ALL localStorage
-      localStorage.clear();
-
-      // Reset ALL state to initial values
-      setClicks(0);
+      // Reset all game state
+      setCurrentCoins(0);
       setClickValue(1);
       setCps(0);
       setPrestigeCurrency(0);
       setPrestigeLevel(0);
       setPrestigeRequirement(1000);
+      
+      // Reset upgrades
       setTierUpgrades(tierUpgradesArray);
       setSwordUpgrades(swordUpgradesArray);
       setSummonUpgrades(summonUpgradesArray);
       setArtifacts(prestigeArtifacts);
+      
+      // Reset achievements
       setUserAchievements(achievements.map(a => ({ ...a, earned: false })));
+      
+      // Reset lifetime stats
       setLifetimeStats({
         clicks: 0,
         coins: 0,
         prestigeCount: 0
       });
-      setSessionClicks(0);
 
-      // Force a complete page reload to reset all intervals and state
+      // Reload the page to ensure all state is fresh
       window.location.reload();
-
     } catch (error) {
       console.error('Error clearing data:', error);
       alert('Error clearing data. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -102,20 +98,24 @@ const SettingsMenu = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
+      {/* Backdrop */}
       <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-game-secondary bg-opacity-90 rounded-lg p-6 shadow-game max-w-md w-full m-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="font-game text-xl text-white">Settings</h2>
+      {/* Settings Panel */}
+      <div className="relative bg-game-secondary bg-opacity-90 rounded-lg shadow-game max-w-md w-full m-4">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 border-b border-game-accent">
+          <h2 className="font-game text-xl text-game-text">Settings</h2>
           <button 
             onClick={onClose}
-            className="text-white hover:text-game-highlight transition-colors"
+            className="text-game-text hover:text-game-highlight transition-colors"
           >
             <span className="material-icons">close</span>
           </button>
         </div>
-        
-        <div className="space-y-6">
+
+        {/* Content */}
+        <div className="p-4 space-y-6">
           {/* Account Section */}
           {user ? (
             <div className="bg-black bg-opacity-50 rounded-lg p-4">
@@ -162,57 +162,56 @@ const SettingsMenu = ({
           )}
 
           {/* Volume Controls */}
-          <div className="volume-control">
-            <h3 className="font-game text-sm text-white mb-2">Background Music</h3>
-            <div className="flex items-center space-x-4">
-              <span className="material-icons text-white">
-                {bgVolume === 0 ? 'volume_off' : 'volume_up'}
-              </span>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={bgVolume} 
-                onChange={(e) => setBgVolume(parseFloat(e.target.value))}
-                className="w-full h-2 bg-game-accent rounded-lg appearance-none cursor-pointer"
-              />
+          <div className="bg-black bg-opacity-50 rounded-lg p-4 space-y-4">
+            <div className="volume-control">
+              <h3 className="font-game text-sm text-white mb-2">Background Music</h3>
+              <div className="flex items-center space-x-4">
+                <span className="material-icons text-white">
+                  {bgVolume === 0 ? 'volume_off' : 'volume_up'}
+                </span>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="1" 
+                  step="0.01" 
+                  value={bgVolume} 
+                  onChange={(e) => setBgVolume(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-game-accent rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="volume-control">
-            <h3 className="font-game text-sm text-white mb-2">Sound Effects</h3>
-            <div className="flex items-center space-x-4">
-              <span className="material-icons text-white">
-                {effectsVolume === 0 ? 'volume_off' : 'music_note'}
-              </span>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={effectsVolume} 
-                onChange={(e) => setEffectsVolume(parseFloat(e.target.value))}
-                className="w-full h-2 bg-game-accent rounded-lg appearance-none cursor-pointer"
-              />
+            <div className="volume-control">
+              <h3 className="font-game text-sm text-white mb-2">Sound Effects</h3>
+              <div className="flex items-center space-x-4">
+                <span className="material-icons text-white">
+                  {effectsVolume === 0 ? 'volume_off' : 'music_note'}
+                </span>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="1" 
+                  step="0.01" 
+                  value={effectsVolume} 
+                  onChange={(e) => setEffectsVolume(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-game-accent rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
             </div>
           </div>
 
           {/* Clear Data */}
-          <div className="border-t border-game-accent pt-6">
+          <div className="bg-black bg-opacity-50 rounded-lg p-4">
+            <h3 className="font-game text-sm text-white mb-2">Clear Data</h3>
             <button
               onClick={handleClearData}
-              disabled={loading}
-              className={`
-                w-full py-2 px-4 rounded-lg font-game text-sm transition-colors
-                ${loading 
-                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                  : 'bg-red-600 hover:bg-red-700 text-white cursor-pointer'
-                }
-              `}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-game py-2 px-4 rounded transition-colors"
             >
-              {loading ? 'Clearing...' : 'Clear Save Data'}
+              Clear All Data
             </button>
+            <p className="text-red-400 text-sm mt-2">
+              Warning: This will reset all progress and cannot be undone!
+            </p>
           </div>
 
           {/* Save Data Info */}

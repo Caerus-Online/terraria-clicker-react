@@ -12,7 +12,7 @@ const UpgradeShop = ({
   handleTierUpgrade,
   handleSwordUpgrade,
   handleSummonUpgrade,
-  clicks,
+  currentCoins,
   onClose
 }) => {
   const [activeTab, setActiveTab] = useState('Tiers');
@@ -36,7 +36,7 @@ const UpgradeShop = ({
                 style={{ imageRendering: 'pixelated' }}
               />
               <span className="text-game-gold font-game">
-                {formatNumber(clicks)}
+                {formatNumber(currentCoins)}
               </span>
             </div>
           </div>
@@ -88,21 +88,21 @@ const UpgradeShop = ({
             <TierUpgrades 
               upgrades={tierUpgrades}
               onUpgrade={handleTierUpgrade}
-              clicks={clicks}
+              coins={currentCoins}
             />
           )}
           {activeTab === 'Swords' && (
             <SwordUpgrades 
               upgrades={swordUpgrades}
               onUpgrade={handleSwordUpgrade}
-              clicks={clicks}
+              coins={currentCoins}
             />
           )}
           {activeTab === 'Summons' && (
             <SummonUpgrades 
               upgrades={summonUpgrades}
               onUpgrade={handleSummonUpgrade}
-              clicks={clicks}
+              coins={currentCoins}
             />
           )}
         </div>

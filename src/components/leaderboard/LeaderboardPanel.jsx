@@ -28,11 +28,11 @@ const LeaderboardPanel = ({
     setError(null);
     try {
       // First update the user's entry if logged in
-      if (user) {
+      if (user && lifetimeStats) {
         await databaseService.updateLeaderboard(user.id, user.user_metadata?.username || 'Anonymous', {
-          totalCoins: lifetimeStats.coins,
-          prestigeLevel,
-          achievementsEarned: userAchievements.filter(a => a.earned).length
+          totalCoins: Math.floor(Number(lifetimeStats.coins) || 0),
+          prestigeLevel: Math.floor(Number(prestigeLevel) || 0),
+          achievementsEarned: Math.floor(Number(userAchievements?.filter(a => a.earned).length) || 0)
         });
       }
 

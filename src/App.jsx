@@ -25,76 +25,62 @@ import { setupDatabase } from './scripts/setupDatabase';
 window.setupDatabase = setupDatabase;
 
 function App() {
-  // Original state management
+  const { user } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
-  const [clicks, setClicks] = useState(parseInt(localStorage.getItem('clicks')) || 0);
-  const [clickValue, setClickValue] = useState(parseInt(localStorage.getItem('clickValue')) || 1);
-  const [cps, setCps] = useState(parseInt(localStorage.getItem('cps')) || 0);
-  const [prestigeCurrency, setPrestigeCurrency] = useState(parseInt(localStorage.getItem('prestigecurrency')) || 0);
-  const [prestigeLevel, setPrestigeLevel] = useState(parseInt(localStorage.getItem('prestigelevel')) || 0);
+  const [clickValue, setClickValue] = useState(1);
+  const [cps, setCps] = useState(0);
+  const [prestigeCurrency, setPrestigeCurrency] = useState(0);
+  const [prestigeLevel, setPrestigeLevel] = useState(0);
+  const [prestigeRequirement, setPrestigeRequirement] = useState(1000);
 
-  // Upgrade states with original localStorage handling
-  const [tierUpgrades, setTierUpgrades] = useState(() => {
-    const stored = localStorage.getItem('tierUpgrades');
-    return stored ? JSON.parse(stored) : tierUpgradesArray;
+  const [tierUpgrades, setTierUpgrades] = useState(tierUpgradesArray);
+  const [swordUpgrades, setSwordUpgrades] = useState(swordUpgradesArray);
+  const [summonUpgrades, setSummonUpgrades] = useState(summonUpgradesArray);
+  const [artifacts, setArtifacts] = useState(prestigeArtifacts);
+  const [userAchievements, setUserAchievements] = useState(achievements);
+  const [lifetimeStats, setLifetimeStats] = useState({
+    clicks: 0,
+    coins: 0,
+    prestigeCount: 0
   });
+  const [currentCoins, setCurrentCoins] = useState(0);
 
-  const [swordUpgrades, setSwordUpgrades] = useState(() => {
-    const stored = localStorage.getItem('swordUpgrades');
-    return stored ? JSON.parse(stored) : swordUpgradesArray;
-  });
-
-  const [summonUpgrades, setSummonUpgrades] = useState(() => {
-    const stored = localStorage.getItem('summonUpgrades');
-    return stored ? JSON.parse(stored) : summonUpgradesArray;
-  });
-
-  // UI states
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [bgVolume, setBgVolume] = useState(0.5);
   const [effectsVolume, setEffectsVolume] = useState(0.8);
   const [isPrestigeOpen, setIsPrestigeOpen] = useState(false);
-  const [prestigeRequirement, setPrestigeRequirement] = useState(() => 
-    parseInt(localStorage.getItem('prestigeRequirement')) || 1000
-  );
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
-  const [userAchievements, setUserAchievements] = useState(() => {
-    const stored = localStorage.getItem('achievements');
-    return stored ? JSON.parse(stored) : achievements;
-  });
   const [newAchievement, setNewAchievement] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  // Refs
   const clickerRef = useRef(null);
   
-  // Calculate sword multiplier (preserve original logic)
   const swordMultiplier = swordUpgrades.filter((upgrade) => upgrade.purchased).pop()?.multiplier || 1;
 
-  // Original click handler with spacebar functionality
   let spacebarPressed = false;
 
-  // Audio functions ref
   const audioFunctions = useRef({
     playClickSound: () => {},
     playPurchaseSound: () => {}
   });
 
-  // Handle sound loading
   const handleSoundLoad = (functions) => {
     audioFunctions.current = functions;
   };
 
-  // Update click handler to play sound
   const handleClick = () => {
-    setClicks(prev => prev + clickValue);
+    const totalValue = Math.floor(clickValue);  // Ensure integer value
+    
     setLifetimeStats(prev => ({
       ...prev,
-      clicks: prev.clicks + 1,
-      coins: prev.coins + clickValue
+      clicks: Math.floor(prev.clicks + totalValue),  // Track total clicks
+      coins: Math.floor(prev.coins + totalValue)     // Track total coins earned
     }));
-    setSessionClicks(prev => prev + clickValue);
+    setCurrentCoins(prev => prev + totalValue);  // Update spendable coins
     audioFunctions.current.playClickSound();
   };
 
@@ -113,20 +99,19 @@ function App() {
     }
   };
 
-  // Original upgrade handlers (preserve exact logic)
   const handleTierUpgrade = (index) => {
     const upgrade = { ...tierUpgrades[index] };
-    if (clicks >= upgrade.cost) {
+    if (currentCoins >= upgrade.cost) {  // Check current coins
       audioFunctions.current.playPurchaseSound();
-      setClicks(prev => prev - upgrade.cost);
+      setCurrentCoins(prev => prev - upgrade.cost);  // Spend from current coins
       
       const prestigeBonus = 1 + (prestigeLevel * 0.05); // 5% per level
       
       const updatedTierUpgrades = tierUpgrades.map((tierUpgrade, i) => {
         if (i === index) {
           const newLevel = tierUpgrade.level + 1;
-          const baseClickValue = tierUpgrade.baseClicksProvided * swordMultiplier * prestigeBonus;
-          const totalClickValue = baseClickValue * newLevel;
+          const baseClickValue = Number((tierUpgrade.baseClicksProvided * swordMultiplier * prestigeBonus).toFixed(2));
+          const totalClickValue = Number((baseClickValue * newLevel).toFixed(2));
           
           return {
             ...tierUpgrade,
@@ -141,13 +126,12 @@ function App() {
 
       setTierUpgrades(updatedTierUpgrades);
 
-      // Calculate new total click value
       const newClickValue = updatedTierUpgrades.reduce(
         (total, upgrade) => total + upgrade.totalClicksProvided,
         1  // Base click value
       );
 
-      setClickValue(newClickValue);
+      setClickValue(Number(newClickValue.toFixed(2)));
     } else {
       setShowWarning(true);
       setTimeout(() => setShowWarning(false), 2000);
@@ -156,41 +140,41 @@ function App() {
 
   const handleSwordUpgrade = (index) => {
     const upgrade = { ...swordUpgrades[index] };
-    if (clicks >= upgrade.cost && !upgrade.purchased) {
+    if (currentCoins >= upgrade.cost && !upgrade.purchased) {  // Check current coins
       audioFunctions.current.playPurchaseSound();
-      setClicks(clicks - upgrade.cost);
+      setCurrentCoins(prev => prev - upgrade.cost);  // Spend from current coins
       upgrade.purchased = true;
       const newSwordMultiplier = upgrade.multiplier;
 
-      // Update the tier upgrade values to match the new multiplier
       const updatedTierUpgrades = tierUpgrades.map((tierUpgrade) => {
+        const baseClickValue = tierUpgrade.baseClicksProvided * newSwordMultiplier;
+        const totalClickValue = baseClickValue * tierUpgrade.level;
         return {
           ...tierUpgrade,
-          totalClicksProvided: tierUpgrade.baseClicksProvided * tierUpgrade.level * newSwordMultiplier,
-          clicksProvided: tierUpgrade.baseClicksProvided * newSwordMultiplier,
+          clicksProvided: baseClickValue,
+          totalClicksProvided: totalClickValue
         };
       });
 
-      // Update the summon upgrades values to match the new multiplier
       const updatedSummonUpgrades = summonUpgrades.map((summonUpgrade) => {
+        const baseCps = summonUpgrade.baseCps * newSwordMultiplier;
+        const totalCps = baseCps * summonUpgrade.level;
         return {
           ...summonUpgrade,
-          totalCps: summonUpgrade.baseCps * summonUpgrade.level * newSwordMultiplier,
-          cpsProvided: summonUpgrade.baseCps * newSwordMultiplier,
+          cpsProvided: baseCps,
+          totalCps: totalCps
         };
       });
 
-      // Update all states
       const updatedSwordUpgrades = [...swordUpgrades];
       updatedSwordUpgrades[index] = upgrade;
       setSwordUpgrades(updatedSwordUpgrades);
       setTierUpgrades(updatedTierUpgrades);
       setSummonUpgrades(updatedSummonUpgrades);
 
-      // Update click value and CPS
       const newClickValue = updatedTierUpgrades.reduce(
         (acc, curr) => acc + curr.totalClicksProvided,
-        0
+        1  // Base click value of 1
       );
       const newCpsValue = updatedSummonUpgrades.reduce(
         (acc, curr) => acc + curr.totalCps,
@@ -198,25 +182,22 @@ function App() {
       );
       setCps(newCpsValue);
       setClickValue(newClickValue);
-    } else {
-      setShowWarning(true);
-      setTimeout(() => setShowWarning(false), 2000);
     }
   };
 
   const handleSummonUpgrade = (index) => {
     const upgrade = { ...summonUpgrades[index] };
-    if (clicks >= upgrade.cost) {
+    if (currentCoins >= upgrade.cost) {  // Check current coins
       audioFunctions.current.playPurchaseSound();
-      setClicks(clicks - upgrade.cost);
+      setCurrentCoins(prev => prev - upgrade.cost);  // Spend from current coins
       
       const prestigeBonus = 1 + (prestigeLevel * 0.05); // 5% per level
       
       const updatedSummonUpgrades = summonUpgrades.map((summonUpgrade, i) => {
         if (i === index) {
           const newLevel = upgrade.level + 1;
-          const baseCps = upgrade.baseCps * swordMultiplier * prestigeBonus;
-          const newTotalCps = baseCps * newLevel;
+          const baseCps = Number((upgrade.baseCps * swordMultiplier * prestigeBonus).toFixed(2));
+          const newTotalCps = Number((baseCps * newLevel).toFixed(2));
           return {
             ...summonUpgrade,
             cpsProvided: baseCps,
@@ -233,23 +214,19 @@ function App() {
         (acc, curr) => acc + curr.totalCps,
         0
       );
-      setCps(newCpsValue);
+      setCps(Number(newCpsValue.toFixed(2)));
     } else {
       setShowWarning(true);
       setTimeout(() => setShowWarning(false), 2000);
     }
   };
 
-  // Handle prestige reset
   const handlePrestige = (gainedPrestige) => {
-    // Add prestige currency
     setPrestigeCurrency(prev => prev + gainedPrestige);
-    
-    // Increment prestige level
     setPrestigeLevel(prev => prev + 1);
     
     // Reset game state
-    setClicks(0);
+    setCurrentCoins(0);  // Reset current coins
     setClickValue(1);
     setCps(0);
     
@@ -264,29 +241,22 @@ function App() {
     // Close prestige shop
     setIsPrestigeOpen(false);
     
-    // Play purchase sound
-    audioFunctions.current.playPurchaseSound();
+    // Update lifetime stats
     setLifetimeStats(prev => ({
       ...prev,
       prestigeCount: prev.prestigeCount + 1
     }));
-    setSessionClicks(0);
+    
+    // Play sound
+    audioFunctions.current.playPurchaseSound();
   };
 
-  // Add artifacts state
-  const [artifacts, setArtifacts] = useState(() => {
-    const stored = localStorage.getItem('artifacts');
-    return stored ? JSON.parse(stored) : prestigeArtifacts;
-  });
-
-  // Calculate total bonuses including prestige level and artifacts
   const calculateTotalMultiplier = () => {
     const prestigeMultiplier = calculatePrestigeMultiplier(prestigeLevel);
     const artifactBonus = calculateTotalBonus(artifacts, 'CLICK_POWER');
     return prestigeMultiplier * (1 + artifactBonus);
   };
 
-  // Handle artifact purchase/upgrade
   const handleArtifactPurchase = (artifactId) => {
     const artifact = artifacts.find(a => a.id === artifactId);
     if (!artifact || artifact.level >= artifact.maxLevel) return;
@@ -302,70 +272,27 @@ function App() {
         return a;
       }));
 
-      // Play purchase sound
       audioFunctions.current.playPurchaseSound();
     }
   };
 
-  // Achievement stats tracking
-  const achievementStats = {
-    CLICK_POWER: clickValue,
-    TOTAL_COINS: clicks,
-    CPS: cps,
-    SWORD_COUNT: swordUpgrades.filter(u => u.purchased).length,
-    PRESTIGE_COUNT: prestigeLevel,
-    PRESTIGE_LEVEL: prestigeLevel
-  };
-
-  // Check achievements
-  useEffect(() => {
-    userAchievements.forEach(achievement => {
-      if (!achievement.earned && checkAchievement(achievement, achievementStats[achievement.type])) {
-        // Update achievement
-        const updatedAchievements = userAchievements.map(a => 
-          a.id === achievement.id ? { ...a, earned: true } : a
-        );
-        setUserAchievements(updatedAchievements);
-        
-        // Show notification
-        setNewAchievement(achievement);
-        
-        // Play sound
-        audioFunctions.current.playPurchaseSound();
-      }
-    });
-  }, [achievementStats]);
-
-  // Save state to localStorage
-  useEffect(() => {
-    localStorage.setItem('clicks', clicks);
-    localStorage.setItem('clickValue', clickValue);
-    localStorage.setItem('cps', cps);
-    localStorage.setItem('prestigecurrency', prestigeCurrency);
-    localStorage.setItem('prestigelevel', prestigeLevel);
-    localStorage.setItem('tierUpgrades', JSON.stringify(tierUpgrades));
-    localStorage.setItem('swordUpgrades', JSON.stringify(swordUpgrades));
-    localStorage.setItem('summonUpgrades', JSON.stringify(summonUpgrades));
-    localStorage.setItem('prestigeRequirement', prestigeRequirement);
-    localStorage.setItem('artifacts', JSON.stringify(artifacts));
-    localStorage.setItem('achievements', JSON.stringify(userAchievements));
-  }, [clicks, clickValue, cps, prestigeCurrency, prestigeLevel, tierUpgrades, swordUpgrades, summonUpgrades, prestigeRequirement, artifacts, userAchievements]);
-
-  // CPS interval
+  // CPS interval effect
   useEffect(() => {
     const interval = setInterval(() => {
-      setClicks(prev => prev + cps);
-      if (cps > 0) {  // Only update lifetime stats if CPS is greater than 0
+      if (cps > 0) {
+        const cpsValue = Math.floor(cps);  // Ensure integer value
         setLifetimeStats(prev => ({
           ...prev,
-          coins: prev.coins + cps
+          clicks: Math.floor(prev.clicks + cpsValue),
+          coins: Math.floor(prev.coins + cpsValue)
         }));
+        setCurrentCoins(prev => prev + cpsValue);  // Update spendable coins
       }
     }, 1000);
     return () => clearInterval(interval);
   }, [cps]);
 
-  // Clear achievement notification after delay
+  // Achievement notification effect
   useEffect(() => {
     if (newAchievement) {
       const timer = setTimeout(() => {
@@ -375,22 +302,7 @@ function App() {
     }
   }, [newAchievement]);
 
-  // Add lifetime stats
-  const [lifetimeStats, setLifetimeStats] = useState(() => {
-    const stored = localStorage.getItem('lifetimeStats');
-    return stored ? JSON.parse(stored) : {
-      clicks: 0,
-      coins: 0,
-      prestigeCount: 0
-    };
-  });
-
-  // Save lifetime stats to localStorage
-  useEffect(() => {
-    localStorage.setItem('lifetimeStats', JSON.stringify(lifetimeStats));
-  }, [lifetimeStats]);
-
-  // Calculate stats for profile panel
+  // Profile stats
   const profileStats = {
     lifetimeClicks: lifetimeStats.clicks,
     lifetimeCoins: lifetimeStats.coins,
@@ -402,185 +314,206 @@ function App() {
     swordMultiplier: swordMultiplier
   };
 
-  // Add auth state
-  const { user } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const playerId = playerService.getPlayerId();
+  // Achievement stats for checking
+  const achievementStats = {
+    CLICK_POWER: clickValue,
+    TOTAL_COINS: lifetimeStats.coins,
+    CPS: cps,
+    SWORD_COUNT: swordUpgrades.filter(u => u.purchased).length,
+    PRESTIGE_COUNT: lifetimeStats.prestigeCount,
+    PRESTIGE_LEVEL: prestigeLevel
+  };
 
-  // Change loading state to only show on initial load
-  const [initialLoading, setInitialLoading] = useState(true);
-
-  // Load user data
+  // Achievement checking effect
   useEffect(() => {
-    const loadUserData = async () => {
-      if (user) {
-        try {
-          const { data } = await databaseService.loadUserData(user.id);
-          
-          if (data) {
-            // Set game progress
-            setClicks(data.progress.clicks || 0);
-            setClickValue(data.progress.click_value || 1);
-            setCps(data.progress.cps || 0);
-            setPrestigeCurrency(data.progress.prestige_currency || 0);
-            setPrestigeLevel(data.progress.prestige_level || 0);
-            setPrestigeRequirement(data.progress.prestige_requirement || 1000);
-
-            // Set upgrades - Preserve the original image paths
-            if (data.upgrades.tier_upgrades) {
-              const loadedTierUpgrades = data.upgrades.tier_upgrades.map((upgrade, index) => ({
-                ...tierUpgradesArray[index],  // Get base upgrade with correct image path
-                ...upgrade,  // Spread loaded data
-                image: tierUpgradesArray[index].image  // Ensure correct image path
-              }));
-              setTierUpgrades(loadedTierUpgrades);
-            }
-
-            if (data.upgrades.sword_upgrades) {
-              const loadedSwordUpgrades = data.upgrades.sword_upgrades.map((upgrade, index) => ({
-                ...swordUpgradesArray[index],
-                ...upgrade,
-                image: swordUpgradesArray[index].image
-              }));
-              setSwordUpgrades(loadedSwordUpgrades);
-            }
-
-            if (data.upgrades.summon_upgrades) {
-              const loadedSummonUpgrades = data.upgrades.summon_upgrades.map((upgrade, index) => ({
-                ...summonUpgradesArray[index],
-                ...upgrade,
-                image: summonUpgradesArray[index].image
-              }));
-              setSummonUpgrades(loadedSummonUpgrades);
-            }
-
-            if (data.upgrades.artifacts) {
-              const loadedArtifacts = data.upgrades.artifacts.map((artifact, index) => ({
-                ...prestigeArtifacts[index],
-                ...artifact,
-                image: prestigeArtifacts[index].image
-              }));
-              setArtifacts(loadedArtifacts);
-            }
-
-            // Set achievements with correct icons
-            if (data.achievements.achievements) {
-              const loadedAchievements = data.achievements.achievements.map((achievement, index) => ({
-                ...achievements[index],
-                ...achievement,
-                icon: achievements[index].icon
-              }));
-              setUserAchievements(loadedAchievements);
-            }
-
-            // Set lifetime stats
-            setLifetimeStats({
-              clicks: data.stats.total_clicks || 0,
-              coins: data.stats.total_coins || 0,
-              prestigeCount: data.stats.total_prestiges || 0
-            });
-          }
-        } catch (error) {
-          console.error('Error loading user data:', error);
-        } finally {
-          setInitialLoading(false);  // Only set false after initial load
-        }
-      } else {
-        // Load from localStorage for anonymous users
-        // ... existing localStorage loading logic ...
-        setInitialLoading(false);  // Set false for anonymous users too
+    userAchievements.forEach(achievement => {
+      if (!achievement.earned && checkAchievement(achievement, achievementStats[achievement.type])) {
+        const updatedAchievements = userAchievements.map(a => 
+          a.id === achievement.id ? { ...a, earned: true } : a
+        );
+        setUserAchievements(updatedAchievements);
+        setNewAchievement(achievement);
+        audioFunctions.current.playPurchaseSound();
       }
-    };
+    });
+  }, [clickValue, lifetimeStats.coins, cps, swordUpgrades, prestigeLevel, lifetimeStats.prestigeCount, lifetimeStats]);
 
-    loadUserData();
-  }, [user]);  // Only run on user change
+  // Add these helper functions at the top level of the App component
+  const saveToLocalStorage = (key, value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
+  };
 
-  // Save game state
+  const loadFromLocalStorage = (key, defaultValue) => {
+    try {
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : defaultValue;
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+      return defaultValue;
+    }
+  };
+
+  // Add this effect to handle saving game state
   useEffect(() => {
     const saveGameState = async () => {
-      if (user) {
+      const gameState = {
+        currentCoins,
+        clickValue,
+        cps,
+        prestigeCurrency,
+        prestigeLevel,
+        prestigeRequirement,
+        tierUpgrades,
+        swordUpgrades,
+        summonUpgrades,
+        artifacts,
+        lifetimeStats,
+        userAchievements
+      };
+
+      if (user?.id) {
+        // Save to database if logged in
         try {
-          await databaseService.saveGameProgress(user.id, {
-            clicks,
-            clickValue,
-            cps,
-            prestigeCurrency,
-            prestigeLevel,
-            prestigeRequirement
-          });
-
-          await databaseService.saveUpgrades(user.id, {
-            tierUpgrades,
-            swordUpgrades,
-            summonUpgrades,
-            artifacts
-          });
-
-          await databaseService.saveAchievements(user.id, userAchievements);
-
-          await databaseService.saveLifetimeStats(user.id, lifetimeStats);
-
-          await databaseService.updateLeaderboard(user.id, user.user_metadata?.username || 'Anonymous', {
-            totalCoins: lifetimeStats.coins,
-            prestigeLevel,
-            achievementsEarned: userAchievements.filter(a => a.earned).length
-          });
+          await Promise.all([
+            databaseService.saveGameProgress(user.id, {
+              clicks: currentCoins,
+              click_value: clickValue,
+              cps: cps,
+              prestige_currency: prestigeCurrency,
+              prestige_level: prestigeLevel,
+              prestige_requirement: prestigeRequirement
+            }),
+            databaseService.saveUpgrades(user.id, {
+              tierUpgrades,
+              swordUpgrades,
+              summonUpgrades,
+              artifacts
+            }),
+            databaseService.saveLifetimeStats(user.id, {
+              clicks: lifetimeStats.clicks,
+              coins: lifetimeStats.coins,
+              prestigeCount: lifetimeStats.prestigeCount
+            }),
+            databaseService.saveAchievements(user.id, userAchievements),
+            // Add leaderboard update with property conversion
+            databaseService.updateLeaderboard(user.id, user.user_metadata?.username || 'Anonymous', {
+              totalCoins: Math.floor(Number(lifetimeStats.coins) || 0),
+              prestigeLevel: Math.floor(Number(prestigeLevel) || 0),
+              achievementsEarned: Math.floor(Number(userAchievements?.filter(a => a.earned).length) || 0)
+            })
+          ]);
         } catch (error) {
-          console.error('Error saving game state:', error);
+          console.error('Error saving to database:', error);
         }
       } else {
-        // Save to localStorage for anonymous users
-        localStorage.setItem('clicks', clicks);
-        localStorage.setItem('clickValue', clickValue);
-        localStorage.setItem('cps', cps);
-        localStorage.setItem('prestigeCurrency', prestigeCurrency);
-        localStorage.setItem('prestigeLevel', prestigeLevel);
-        localStorage.setItem('prestigeRequirement', prestigeRequirement);
-        localStorage.setItem('tierUpgrades', JSON.stringify(tierUpgrades));
-        localStorage.setItem('swordUpgrades', JSON.stringify(swordUpgrades));
-        localStorage.setItem('summonUpgrades', JSON.stringify(summonUpgrades));
-        localStorage.setItem('artifacts', JSON.stringify(artifacts));
-        localStorage.setItem('achievements', JSON.stringify(userAchievements));
-        localStorage.setItem('lifetimeStats', JSON.stringify(lifetimeStats));
+        // Save to localStorage if not logged in
+        Object.entries(gameState).forEach(([key, value]) => {
+          saveToLocalStorage(key, value);
+        });
       }
     };
 
-    // Save every 30 seconds
-    const saveInterval = setInterval(saveGameState, 30000);
-    
-    // Save when component unmounts
-    return () => {
-      clearInterval(saveInterval);
-      saveGameState();
-    };
-  }, [user, clicks, clickValue, cps, prestigeCurrency, prestigeLevel, prestigeRequirement,
-      tierUpgrades, swordUpgrades, summonUpgrades, artifacts, userAchievements, lifetimeStats]);
+    // Debounce save to prevent too frequent saves
+    const timeoutId = setTimeout(saveGameState, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [currentCoins, clickValue, cps, prestigeCurrency, prestigeLevel, prestigeRequirement, 
+      tierUpgrades, swordUpgrades, summonUpgrades, artifacts, lifetimeStats, userAchievements, user]);
 
-  // Don't force auth modal on anonymous players
+  // Replace the existing initialization effect with this one
+  useEffect(() => {
+    const initializeGameState = async () => {
+      setInitialLoading(true);
+      try {
+        if (user?.id) {
+          // Load from database if logged in
+          const { data } = await databaseService.loadUserData(user.id);
+          if (data) {
+            const { progress, upgrades, stats, achievements: loadedAchievements } = data;
+            
+            // Set game progress
+            setCurrentCoins(progress.clicks || 0);
+            setClickValue(progress.click_value || 1);
+            setCps(progress.cps || 0);
+            setPrestigeCurrency(progress.prestige_currency || 0);
+            setPrestigeLevel(progress.prestige_level || 0);
+            setPrestigeRequirement(progress.prestige_requirement || 1000);
+            
+            // Set upgrades
+            if (upgrades) {
+              setTierUpgrades(upgrades.tier_upgrades || tierUpgradesArray);
+              setSwordUpgrades(upgrades.sword_upgrades || swordUpgradesArray);
+              setSummonUpgrades(upgrades.summon_upgrades || summonUpgradesArray);
+              setArtifacts(upgrades.artifacts || prestigeArtifacts);
+            }
+            
+            // Set lifetime stats
+            if (stats) {
+              setLifetimeStats({
+                clicks: stats.total_clicks || 0,
+                coins: stats.total_coins || 0,
+                prestigeCount: stats.total_prestiges || 0
+              });
+            }
+            
+            // Set achievements
+            if (loadedAchievements) {
+              setUserAchievements(loadedAchievements.achievements || achievements);
+            }
+          }
+        } else {
+          // Load from localStorage if not logged in
+          setCurrentCoins(loadFromLocalStorage('currentCoins', 0));
+          setClickValue(loadFromLocalStorage('clickValue', 1));
+          setCps(loadFromLocalStorage('cps', 0));
+          setPrestigeCurrency(loadFromLocalStorage('prestigeCurrency', 0));
+          setPrestigeLevel(loadFromLocalStorage('prestigeLevel', 0));
+          setPrestigeRequirement(loadFromLocalStorage('prestigeRequirement', 1000));
+          setTierUpgrades(loadFromLocalStorage('tierUpgrades', tierUpgradesArray));
+          setSwordUpgrades(loadFromLocalStorage('swordUpgrades', swordUpgradesArray));
+          setSummonUpgrades(loadFromLocalStorage('summonUpgrades', summonUpgradesArray));
+          setArtifacts(loadFromLocalStorage('artifacts', prestigeArtifacts));
+          setLifetimeStats(loadFromLocalStorage('lifetimeStats', {
+            clicks: 0,
+            coins: 0,
+            prestigeCount: 0
+          }));
+          setUserAchievements(loadFromLocalStorage('userAchievements', achievements));
+        }
+      } catch (error) {
+        console.error('Error initializing game state:', error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    initializeGameState();
+  }, [user]);
+
   useEffect(() => {
     if (!user && !isAuthModalOpen && !playerService.getPlayerId()) {
       setIsAuthModalOpen(true);
     }
   }, [user]);
 
-  // Add leaderboard state
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
-
-  // Add state for prestige notification
   const [showPrestigeNotification, setShowPrestigeNotification] = useState(false);
 
-  // Check for prestige availability in useEffect
   useEffect(() => {
-    if (clicks >= prestigeRequirement && !showPrestigeNotification) {
+    if (currentCoins >= prestigeRequirement && !showPrestigeNotification) {
       setShowPrestigeNotification(true);
-      setTimeout(() => setShowPrestigeNotification(false), 5000);
+    } else if (currentCoins < prestigeRequirement && showPrestigeNotification) {
+      setShowPrestigeNotification(false);
     }
-  }, [clicks, prestigeRequirement]);
+  }, [currentCoins, prestigeRequirement, showPrestigeNotification]);
 
-  // Add new state for session clicks
-  const [sessionClicks, setSessionClicks] = useState(0);
+  const handlePrestigeNotificationClick = () => {
+    setIsPrestigeOpen(true);
+    setShowPrestigeNotification(false);
+  };
 
-  // Only show loading screen on initial load
   if (initialLoading) {
     return <LoadingScreen />;
   }
@@ -598,15 +531,16 @@ function App() {
 
       <main className="main-content">
         <ClickerCore 
+          ref={clickerRef}
           handleClick={handleClick}
           swordImage={swordUpgrades.find(u => u.purchased)?.image || defaultSwordImage}
           clickValue={formatNumber(clickValue)}
           cps={formatNumber(cps)}
-          clicks={formatNumber(clicks)}
-          lifetimeClicks={sessionClicks}
+          currentCoins={currentCoins}
           swordMultiplier={swordMultiplier}
           prestigeLevel={prestigeLevel}
-          ref={clickerRef}
+          showPrestigeNotification={showPrestigeNotification}
+          onPrestigeNotificationClick={handlePrestigeNotificationClick}
         />
       </main>
 
@@ -618,8 +552,27 @@ function App() {
           handleTierUpgrade={handleTierUpgrade}
           handleSwordUpgrade={handleSwordUpgrade}
           handleSummonUpgrade={handleSummonUpgrade}
-          clicks={clicks}
+          currentCoins={currentCoins}
           onClose={() => setIsShopOpen(false)}
+        />
+      )}
+
+      {isProfileOpen && (
+        <ProfileStats 
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          stats={profileStats}
+        />
+      )}
+
+      {isLeaderboardOpen && (
+        <LeaderboardPanel 
+          isOpen={isLeaderboardOpen}
+          onClose={() => setIsLeaderboardOpen(false)}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
+          lifetimeStats={lifetimeStats}
+          prestigeLevel={prestigeLevel}
+          userAchievements={userAchievements}
         />
       )}
 
@@ -631,7 +584,7 @@ function App() {
         effectsVolume={effectsVolume}
         setEffectsVolume={setEffectsVolume}
         onOpenAuth={() => setIsAuthModalOpen(true)}
-        setClicks={setClicks}
+        setCurrentCoins={setCurrentCoins}
         setClickValue={setClickValue}
         setCps={setCps}
         setPrestigeCurrency={setPrestigeCurrency}
@@ -643,7 +596,11 @@ function App() {
         setArtifacts={setArtifacts}
         setUserAchievements={setUserAchievements}
         setLifetimeStats={setLifetimeStats}
-        setSessionClicks={setSessionClicks}
+        tierUpgradesArray={tierUpgradesArray}
+        swordUpgradesArray={swordUpgradesArray}
+        summonUpgradesArray={summonUpgradesArray}
+        prestigeArtifacts={prestigeArtifacts}
+        achievements={achievements}
       />
 
       <AudioController 
@@ -656,7 +613,7 @@ function App() {
         <PrestigeShop 
           isOpen={isPrestigeOpen}
           onClose={() => setIsPrestigeOpen(false)}
-          currentClicks={clicks}
+          currentClicks={currentCoins}
           prestigeLevel={prestigeLevel}
           prestigeCurrency={prestigeCurrency}
           onPrestige={handlePrestige}
@@ -688,37 +645,11 @@ function App() {
         </div>
       )}
 
-      {isProfileOpen && (
-        <ProfileStats 
-          isOpen={isProfileOpen}
-          onClose={() => setIsProfileOpen(false)}
-          stats={profileStats}
+      {isAuthModalOpen && (
+        <AuthModal 
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
         />
-      )}
-
-      <AuthModal 
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
-
-      {isLeaderboardOpen && (
-        <LeaderboardPanel 
-          isOpen={isLeaderboardOpen}
-          onClose={() => setIsLeaderboardOpen(false)}
-          onOpenAuth={() => setIsAuthModalOpen(true)}
-          lifetimeStats={lifetimeStats}
-          prestigeLevel={prestigeLevel}
-          userAchievements={userAchievements}
-        />
-      )}
-
-      {showPrestigeNotification && (
-        <div className="fixed bottom-4 right-4 bg-purple-600 text-white p-4 rounded-lg shadow-lg animate-bounce z-50">
-          <div className="flex items-center space-x-2">
-            <span className="material-icons">stars</span>
-            <span>Prestige Available!</span>
-          </div>
-        </div>
       )}
     </div>
   );
