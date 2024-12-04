@@ -534,13 +534,14 @@ function App() {
           ref={clickerRef}
           handleClick={handleClick}
           swordImage={swordUpgrades.find(u => u.purchased)?.image || defaultSwordImage}
-          clickValue={formatNumber(clickValue)}
-          cps={formatNumber(cps)}
+          clickValue={clickValue}
+          cps={cps}
           currentCoins={currentCoins}
           swordMultiplier={swordMultiplier}
           prestigeLevel={prestigeLevel}
           showPrestigeNotification={showPrestigeNotification}
           onPrestigeNotificationClick={handlePrestigeNotificationClick}
+          summonUpgrades={summonUpgrades.filter(u => u.level > 0)}
         />
       </main>
 
