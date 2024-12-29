@@ -4,7 +4,7 @@ import { formatNumber } from '../../utils/formatNumber';
 import coinIcon from '../../img/coin-icon.png';
 import prestigeIcon from '../../img/platnium.png';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase, supabaseAdmin } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 const LeaderboardPanel = ({ 
   isOpen, 
@@ -14,7 +14,7 @@ const LeaderboardPanel = ({
   prestigeLevel,
   userAchievements
 }) => {
-  const { user } = useAuth();
+  const { user, username } = useAuth();
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,8 +28,8 @@ const LeaderboardPanel = ({
     setError(null);
     try {
       // First update the user's entry if logged in
-      if (user && lifetimeStats) {
-        await databaseService.updateLeaderboard(user.id, user.user_metadata?.username || 'Anonymous', {
+      if (user && lifetimeStats && username) {
+        await databaseService.updateLeaderboard(user.id, username, {
           totalCoins: Math.floor(Number(lifetimeStats.coins) || 0),
           prestigeLevel: Math.floor(Number(prestigeLevel) || 0),
           achievementsEarned: Math.floor(Number(userAchievements?.filter(a => a.earned).length) || 0)
@@ -283,4 +283,4 @@ const LeaderboardPanel = ({
   );
 };
 
-export default LeaderboardPanel; 
+export default LeaderboardPanel;

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ClickerCore from './components/core/ClickerCore';
 import Sidebar from './components/navigation/Sidebar';
 import UpgradeShop from './components/shop/UpgradeShop';
@@ -20,13 +20,15 @@ import { playerService } from './services/playerService';
 import LeaderboardPanel from './components/leaderboard/LeaderboardPanel';
 import { setupDatabase } from './scripts/setupDatabase';
 import { reattachImagesToUpgrades } from './data/imageData';
+import { supabase } from './lib/supabase';
 
 // Make it available globally
 window.setupDatabase = setupDatabase;
 
 function App() {
-  const { user } = useAuth();
+  const { user, username } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [clickValue, setClickValue] = useState(1);
   const [cps, setCps] = useState(0);
@@ -399,8 +401,8 @@ function App() {
               prestigeCount: lifetimeStats.prestigeCount
             }),
             databaseService.saveAchievements(user.id, userAchievements),
-            // Add leaderboard update with property conversion
-            databaseService.updateLeaderboard(user.id, user.user_metadata?.username || 'Anonymous', {
+            // Update leaderboard with context username
+            databaseService.updateLeaderboard(user.id, username || 'Anonymous', {
               totalCoins: Math.floor(Number(lifetimeStats.coins) || 0),
               prestigeLevel: Math.floor(Number(prestigeLevel) || 0),
               achievementsEarned: Math.floor(Number(userAchievements?.filter(a => a.earned).length) || 0)
@@ -501,8 +503,21 @@ function App() {
       }
     };
 
+    // Check for verification in URL
+    const hash = window.location.hash;
+    if (hash.includes('access_token=')) {
+      // Force sign out and show verification success modal
+      supabase.auth.signOut().then(() => {
+        setIsAuthModalOpen(true);
+        setVerificationSuccess(true);
+        // Remove the hash to clean up the URL
+        window.location.hash = '';
+      });
+    }
+
+    // Initialize game state
     initializeGameState();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     if (!user && !isAuthModalOpen && !playerService.getPlayerId()) {

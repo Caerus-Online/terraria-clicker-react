@@ -60,6 +60,36 @@ const setupTables = async () => {
     achievements_earned: 0,
     updated_at: new Date().toISOString()
   });
+
+  // Enable RLS on users table
+  await supabase.rpc('set_table_rls', { table_name: 'users', enabled: true });
+
+  // Policy to allow users to read their own data
+  await supabase.rpc('create_policy', {
+    table_name: 'users',
+    name: 'Users can read own data',
+    definition: `auth.uid() = id`,
+    action: 'SELECT',
+    check: true
+  });
+
+  // Policy to allow new user creation during registration
+  await supabase.rpc('create_policy', {
+    table_name: 'users',
+    name: 'Allow user registration',
+    definition: `auth.uid() = id`,
+    action: 'INSERT',
+    check: true
+  });
+
+  // Policy to allow users to update their own data
+  await supabase.rpc('create_policy', {
+    table_name: 'users',
+    name: 'Users can update own data',
+    definition: `auth.uid() = id`,
+    action: 'UPDATE',
+    check: true
+  });
 };
 
 export const setupDatabase = async () => {

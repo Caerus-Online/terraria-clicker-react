@@ -20,7 +20,7 @@ const ProfileStats = ({
     swordMultiplier
   }
 }) => {
-  const { user } = useAuth();
+  const { user, username } = useAuth();
 
   if (!isOpen) return null;
 
@@ -51,7 +51,7 @@ const ProfileStats = ({
               <div className="flex items-center justify-between">
                 <span className="text-white">Username:</span>
                 <span className="text-game-highlight">
-                  {user?.user_metadata?.username || 'Anonymous'}
+                  {username || 'Anonymous'}
                 </span>
               </div>
               {!user && (

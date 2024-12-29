@@ -9,22 +9,35 @@ export const databaseService = {
     try {
       console.log('Initializing new user:', userId, username);
       
-      // Create user profile first
+      // Create user record first (source of truth for username)
       const { error: userError } = await supabase
         .from('users')
-        .upsert([{
+        .insert({
           id: userId,
-          username,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }]);
+          username: username,
+          created_at: new Date().toISOString()
+        });
 
       if (userError) throw userError;
+
+      // Then create leaderboard entry with same username
+      const { error: leaderboardError } = await supabase
+        .from('leaderboard')
+        .insert({
+          user_id: userId,
+          username: username,
+          total_coins: 0,
+          prestige_level: 0,
+          achievements_earned: 0,
+          updated_at: new Date().toISOString()
+        });
+
+      if (leaderboardError) throw leaderboardError;
 
       // Initialize game data
       const { error: progressError } = await supabase
         .from('game_progress')
-        .upsert([{
+        .insert({
           user_id: userId,
           clicks: 0,
           click_value: 1,
@@ -32,35 +45,29 @@ export const databaseService = {
           prestige_currency: 0,
           prestige_level: 0,
           prestige_requirement: 1000
-        }]);
+        });
 
       if (progressError) throw progressError;
 
       // Initialize upgrades
       const { error: upgradesError } = await supabase
         .from('upgrades')
-        .upsert([{
+        .insert([{
           user_id: userId,
-          tier_upgrades: tierUpgradesArray,
-          sword_upgrades: swordUpgradesArray,
-          summon_upgrades: summonUpgradesArray,
-          artifacts: prestigeArtifacts
+          tier_upgrades: [],
+          sword_upgrades: [],
+          summon_upgrades: [],
+          artifacts: []
         }]);
 
       if (upgradesError) throw upgradesError;
 
-      // Initialize achievements with the full default achievements array
+      // Initialize achievements
       const { error: achievementsError } = await supabase
         .from('achievements')
-        .upsert([{
+        .insert([{
           user_id: userId,
-          achievements: achievements.map(achievement => ({
-            ...achievement,
-            earned: false,
-            progress: 0
-          })),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          achievements: []
         }]);
 
       if (achievementsError) throw achievementsError;
@@ -68,7 +75,7 @@ export const databaseService = {
       // Initialize lifetime stats
       const { error: statsError } = await supabase
         .from('lifetime_stats')
-        .upsert([{
+        .insert([{
           user_id: userId,
           total_clicks: 0,
           total_coins: 0,
@@ -76,19 +83,6 @@ export const databaseService = {
         }]);
 
       if (statsError) throw statsError;
-
-      // Initialize leaderboard entry
-      const { error: leaderboardError } = await supabase
-        .from('leaderboard')
-        .upsert([{
-          user_id: userId,
-          username,
-          total_coins: 0,
-          prestige_level: 0,
-          achievements_earned: 0
-        }]);
-
-      if (leaderboardError) throw leaderboardError;
 
       return { success: true };
     } catch (error) {
@@ -152,13 +146,22 @@ export const databaseService = {
         lifetimeStats.data = data;
       }
 
+      // If no leaderboard entry, try to get username from users table
       if (!leaderboard.data) {
-        const { data } = await this.updateLeaderboard(userId, 'Anonymous', {
-          totalCoins: 0,
-          prestigeLevel: 0,
-          achievementsEarned: 0
-        });
-        leaderboard.data = data;
+        const { data: userData } = await supabase
+          .from('users')
+          .select('username')
+          .eq('id', userId)
+          .single();
+
+        if (userData?.username) {
+          const { data } = await this.updateLeaderboard(userId, userData.username, {
+            totalCoins: 0,
+            prestigeLevel: 0,
+            achievementsEarned: 0
+          });
+          leaderboard.data = data;
+        }
       }
 
       // Return combined data
@@ -179,16 +182,50 @@ export const databaseService = {
 
   // User Management
   async createUser(userId, username) {
-    return await supabase
-      .from('users')
-      .upsert([{ 
-        id: userId, 
-        username,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }])
-      .select('*')
-      .single();
+    try {
+      // First check if username is available
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('username')
+        .eq('username', username)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') throw checkError;
+      if (existingUser) throw new Error('Username already taken');
+
+      // Create user record
+      const { data, error } = await supabase
+        .from('users')
+        .upsert([{ 
+          id: userId,
+          username,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Also update leaderboard
+      const { error: leaderboardError } = await supabase
+        .from('leaderboard')
+        .upsert([{
+          user_id: userId,
+          username,
+          total_coins: 0,
+          prestige_level: 0,
+          achievements_earned: 0,
+          updated_at: new Date().toISOString()
+        }]);
+
+      if (leaderboardError) throw leaderboardError;
+
+      return { data };
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
   },
 
   // Game Progress
@@ -490,20 +527,31 @@ export const databaseService = {
   // Leaderboard
   async updateLeaderboard(userId, username, stats) {
     try {
+      // First verify username from users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', userId)
+        .single();
+
+      if (userError) {
+        console.error('Error verifying username:', userError);
+        throw userError;
+      }
+
+      // Use verified username from users table
       const { data, error } = await supabase
         .from('leaderboard')
-        .upsert([{
+        .upsert({
           user_id: userId,
-          username,
+          username: userData.username, // Always use username from users table
           total_coins: Math.floor(Number(stats.totalCoins) || 0),
           prestige_level: Math.floor(Number(stats.prestigeLevel) || 0),
           achievements_earned: Math.floor(Number(stats.achievementsEarned) || 0),
           updated_at: new Date().toISOString()
-        }], {
+        }, {
           onConflict: 'user_id'
-        })
-        .select()
-        .single();
+        });
 
       if (error) throw error;
       return { data };
@@ -530,11 +578,35 @@ export const databaseService = {
   },
 
   async getUserByUsername(username) {
-    return await supabase
-      .from('users')
-      .select('username')
-      .eq('username', username)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('leaderboard')
+        .select('username')
+        .eq('username', username)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return { data };
+    } catch (error) {
+      console.error('Error checking username:', error);
+      throw error;
+    }
+  },
+
+  async getUserById(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return { data };
+    } catch (error) {
+      console.error('Error getting user by id:', error);
+      throw error;
+    }
   },
 
   async createUserProfile(userData) {
