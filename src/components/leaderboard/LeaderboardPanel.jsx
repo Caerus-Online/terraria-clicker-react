@@ -22,6 +22,7 @@ const LeaderboardPanel = ({
   const [userRank, setUserRank] = useState(null);
   const [userEntry, setUserEntry] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState('coins');
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -89,7 +90,21 @@ const LeaderboardPanel = ({
     return `Updated ${Math.floor(minutes / 60)} hours ago`;
   };
 
+  // Add this function to sort data based on active tab
+  const getSortedData = () => {
+    if (!leaderboardData.length) return [];
+    return [...leaderboardData].sort((a, b) => {
+      if (activeTab === 'coins') {
+        return b.total_coins - a.total_coins;
+      } else {
+        return b.prestige_level - a.prestige_level;
+      }
+    });
+  };
+
   if (!isOpen) return null;
+
+  const sortedData = getSortedData();
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -118,6 +133,32 @@ const LeaderboardPanel = ({
           </div>
           <button onClick={onClose}>
             <span className="material-icons text-white hover:text-game-highlight">close</span>
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 p-4 border-b border-game-accent">
+          <button
+            onClick={() => setActiveTab('coins')}
+            className={`flex items-center gap-2 px-4 py-2 rounded ${
+              activeTab === 'coins'
+                ? 'bg-game-highlight text-white'
+                : 'bg-black bg-opacity-50 text-white hover:bg-opacity-70'
+            }`}
+          >
+            <img src={coinIcon} alt="Coins" className="w-4 h-4" style={{ imageRendering: 'pixelated' }} />
+            Coins
+          </button>
+          <button
+            onClick={() => setActiveTab('prestige')}
+            className={`flex items-center gap-2 px-4 py-2 rounded ${
+              activeTab === 'prestige'
+                ? 'bg-game-highlight text-white'
+                : 'bg-black bg-opacity-50 text-white hover:bg-opacity-70'
+            }`}
+          >
+            <img src={prestigeIcon} alt="Prestige" className="w-4 h-4" style={{ imageRendering: 'pixelated' }} />
+            Prestige
           </button>
         </div>
 
@@ -157,13 +198,13 @@ const LeaderboardPanel = ({
                 Try Again
               </button>
             </div>
-          ) : leaderboardData.length === 0 ? (
+          ) : sortedData.length === 0 ? (
             <div className="text-center py-8 text-white">
               No entries yet. Be the first to join the leaderboard!
             </div>
           ) : (
             <div className="space-y-4">
-              {leaderboardData.map((entry, index) => (
+              {sortedData.map((entry, index) => (
                 <div 
                   key={entry.id}
                   className={`
@@ -188,7 +229,7 @@ const LeaderboardPanel = ({
                       <img 
                         src={coinIcon} 
                         alt="Coins" 
-                        className="w-5 h-5"
+                        className="w-4 h-4"
                         style={{ imageRendering: 'pixelated' }}
                       />
                       <span className="text-game-gold font-game">
@@ -201,7 +242,7 @@ const LeaderboardPanel = ({
                       <img 
                         src={prestigeIcon} 
                         alt="Prestige" 
-                        className="w-5 h-5"
+                        className="w-4 h-4"
                         style={{ imageRendering: 'pixelated' }}
                       />
                       <span className="text-purple-400 font-game">
@@ -211,7 +252,7 @@ const LeaderboardPanel = ({
 
                     {/* Achievements */}
                     <div className="flex items-center space-x-2">
-                      <span className="material-icons text-yellow-400">emoji_events</span>
+                      <span className="material-icons text-yellow-400" style={{ fontSize: '16px' }}>emoji_events</span>
                       <span className="text-yellow-400 font-game">
                         {entry.achievements_earned}
                       </span>
@@ -237,7 +278,7 @@ const LeaderboardPanel = ({
                   <img 
                     src={coinIcon} 
                     alt="Coins" 
-                    className="w-5 h-5"
+                    className="w-4 h-4"
                     style={{ imageRendering: 'pixelated' }}
                   />
                   <span className="text-game-gold font-game">
@@ -250,7 +291,7 @@ const LeaderboardPanel = ({
                   <img 
                     src={prestigeIcon} 
                     alt="Prestige" 
-                    className="w-5 h-5"
+                    className="w-4 h-4"
                     style={{ imageRendering: 'pixelated' }}
                   />
                   <span className="text-purple-400 font-game">
@@ -260,7 +301,7 @@ const LeaderboardPanel = ({
 
                 {/* Achievements */}
                 <div className="flex items-center space-x-2">
-                  <span className="material-icons text-yellow-400">emoji_events</span>
+                  <span className="material-icons text-yellow-400" style={{ fontSize: '16px' }}>emoji_events</span>
                   <span className="text-yellow-400 font-game">
                     {userEntry.achievements_earned}
                   </span>

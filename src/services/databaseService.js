@@ -231,18 +231,53 @@ export const databaseService = {
   // Game Progress
   async saveGameProgress(userId, progress) {
     try {
+      // Get current progress to validate changes
+      const { data: currentProgress } = await supabase
+        .from('game_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      // Validate changes
+      const validatedProgress = {
+        user_id: userId,
+        clicks: Math.floor(Number(progress.clicks) || 0),
+        click_value: Math.floor(Number(progress.click_value) || 1),
+        cps: Math.floor(Number(progress.cps) || 0),
+        prestige_currency: Math.floor(Number(progress.prestige_currency) || 0),
+        prestige_level: Math.floor(Number(progress.prestige_level) || 0),
+        prestige_requirement: Math.floor(Number(progress.prestige_requirement) || 1000),
+        last_update: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      // If there's existing progress, validate the changes
+      if (currentProgress) {
+        const timeDiff = new Date() - new Date(currentProgress.last_update);
+        const maxClicksPerSecond = 20; // Maximum 20 clicks per second
+        const maxPossibleClicks = (timeDiff / 1000) * maxClicksPerSecond;
+        const clickDiff = validatedProgress.clicks - currentProgress.clicks;
+
+        // If clicks increased more than possible, reject the update
+        if (clickDiff > maxPossibleClicks) {
+          throw new Error('Invalid click rate detected');
+        }
+
+        // Validate CPS isn't higher than possible from upgrades
+        const maxPossibleCPS = 1000000; // Set based on your game's maximum possible CPS
+        if (validatedProgress.cps > maxPossibleCPS) {
+          throw new Error('Invalid CPS value detected');
+        }
+
+        // Validate prestige level changes
+        if (validatedProgress.prestige_level > currentProgress.prestige_level + 1) {
+          throw new Error('Invalid prestige level change detected');
+        }
+      }
+
       const { data, error } = await supabase
         .from('game_progress')
-        .upsert([{
-          user_id: userId,
-          clicks: Math.floor(Number(progress.clicks) || 0),
-          click_value: Math.floor(Number(progress.click_value) || 1),
-          cps: Math.floor(Number(progress.cps) || 0),
-          prestige_currency: Math.floor(Number(progress.prestige_currency) || 0),
-          prestige_level: Math.floor(Number(progress.prestige_level) || 0),
-          prestige_requirement: Math.floor(Number(progress.prestige_requirement) || 1000),
-          updated_at: new Date().toISOString()
-        }], {
+        .upsert([validatedProgress], {
           onConflict: 'user_id'
         })
         .select()
@@ -527,6 +562,43 @@ export const databaseService = {
   // Leaderboard
   async updateLeaderboard(userId, username, stats) {
     try {
+      // Get current stats to validate changes
+      const { data: currentStats } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      // Validate changes
+      const validatedStats = {
+        total_coins: Math.floor(Number(stats.totalCoins) || 0),
+        prestige_level: Math.floor(Number(stats.prestigeLevel) || 0),
+        achievements_earned: Math.floor(Number(stats.achievementsEarned) || 0)
+      };
+
+      // If there are existing stats, validate the changes
+      if (currentStats) {
+        // Validate coin increase isn't impossibly high
+        const maxPossibleCoinsPerHour = 1000000000; // Set based on your game's maximum possible earnings
+        const timeDiff = new Date() - new Date(currentStats.updated_at);
+        const maxPossibleIncrease = (timeDiff / 3600000) * maxPossibleCoinsPerHour;
+        
+        if (validatedStats.total_coins - currentStats.total_coins > maxPossibleIncrease) {
+          throw new Error('Invalid coin increase detected');
+        }
+
+        // Validate prestige level isn't impossibly high
+        if (validatedStats.prestige_level > currentStats.prestige_level + 1) {
+          throw new Error('Invalid prestige level change detected');
+        }
+
+        // Validate achievements count isn't impossibly high
+        const maxPossibleAchievements = 100; // Set to your game's total achievements
+        if (validatedStats.achievements_earned > maxPossibleAchievements) {
+          throw new Error('Invalid achievements count detected');
+        }
+      }
+
       // First verify username from users table
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -544,10 +616,8 @@ export const databaseService = {
         .from('leaderboard')
         .upsert({
           user_id: userId,
-          username: userData.username, // Always use username from users table
-          total_coins: Math.floor(Number(stats.totalCoins) || 0),
-          prestige_level: Math.floor(Number(stats.prestigeLevel) || 0),
-          achievements_earned: Math.floor(Number(stats.achievementsEarned) || 0),
+          username: userData.username,
+          ...validatedStats,
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'user_id'

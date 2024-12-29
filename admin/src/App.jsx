@@ -224,21 +224,48 @@ function App() {
         throw new Error('Username already taken');
       }
 
-      // Update username in leaderboard first (source of truth)
+      // Check if user exists in users table
+      const { data: userData, error: userCheckError } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', userId)
+        .single();
+
+      if (!userData) {
+        // Create user record if it doesn't exist
+        const { error: createError } = await supabase
+          .from('users')
+          .insert({
+            id: userId,
+            username: editUsername,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (createError) throw createError;
+      } else {
+        // Update existing user record
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            username: editUsername,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+
+        if (updateError) throw updateError;
+      }
+
+      // Update leaderboard entry
       const { error: leaderboardError } = await supabase
         .from('leaderboard')
-        .update({ username: editUsername })
+        .update({ 
+          username: editUsername,
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', userId);
 
       if (leaderboardError) throw leaderboardError;
-
-      // Then update users table
-      const { error: userError } = await supabase
-        .from('users')
-        .update({ username: editUsername })
-        .eq('id', userId);
-
-      if (userError) throw userError;
 
       toast.success('Username updated successfully');
       setEditingUser(null);

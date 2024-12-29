@@ -74,15 +74,20 @@ function App() {
     audioFunctions.current = functions;
   };
 
+  const [lastClickTime, setLastClickTime] = useState(Date.now());
+  const [clickCount, setClickCount] = useState(0);
+  const clickCooldown = 50; // Minimum 50ms between clicks
+  const maxClicksPerSecond = 20; // Maximum 20 clicks per second
+
   const handleClick = () => {
-    const totalValue = Math.floor(clickValue);  // Ensure integer value
+    const totalValue = Math.floor(clickValue);
     
     setLifetimeStats(prev => ({
       ...prev,
-      clicks: Math.floor(prev.clicks + totalValue),  // Track total clicks
-      coins: Math.floor(prev.coins + totalValue)     // Track total coins earned
+      clicks: Math.floor(prev.clicks + totalValue),
+      coins: Math.floor(prev.coins + totalValue)
     }));
-    setCurrentCoins(prev => prev + totalValue);  // Update spendable coins
+    setCurrentCoins(prev => prev + totalValue);
     audioFunctions.current.playClickSound();
   };
 
