@@ -87,6 +87,7 @@ function App() {
       clicks: Math.floor(prev.clicks + totalValue),
       coins: Math.floor(prev.coins + totalValue)
     }));
+
     setCurrentCoins(prev => prev + totalValue);
     audioFunctions.current.playClickSound();
   };
@@ -106,18 +107,44 @@ function App() {
     }
   };
 
+  const calculateCostReduction = (artifacts) => {
+    const reduction = calculateTotalBonus(artifacts, 'COST_REDUCTION');
+    return Math.min(reduction, 0.9); // Cap at 90% reduction
+  };
+
+  const calculateTotalMultiplier = () => {
+    const prestigeMultiplier = calculatePrestigeMultiplier(prestigeLevel);
+    const clickPowerBonus = calculateTotalBonus(artifacts, 'CLICK_POWER');
+    const swordBonus = calculateTotalBonus(artifacts, 'SWORD_BOOST');
+    return prestigeMultiplier * (1 + clickPowerBonus) * (1 + swordBonus);
+  };
+
+  const calculateCPSMultiplier = () => {
+    const prestigeMultiplier = calculatePrestigeMultiplier(prestigeLevel);
+    const cpsBonus = calculateTotalBonus(artifacts, 'CPS_BOOST');
+    return prestigeMultiplier * (1 + cpsBonus);
+  };
+
+  const calculatePrestigeGainMultiplier = () => {
+    const prestigeGainBonus = calculateTotalBonus(artifacts, 'PRESTIGE_GAIN');
+    return 1 + prestigeGainBonus;
+  };
+
   const handleTierUpgrade = (index) => {
     const upgrade = { ...tierUpgrades[index] };
-    if (currentCoins >= upgrade.cost) {  // Check current coins
+    const costReduction = calculateCostReduction(artifacts);
+    const finalCost = Math.floor(upgrade.cost * (1 - costReduction));
+
+    if (currentCoins >= finalCost) {
       audioFunctions.current.playPurchaseSound();
-      setCurrentCoins(prev => prev - upgrade.cost);  // Spend from current coins
+      setCurrentCoins(prev => prev - finalCost);
       
-      const prestigeBonus = 1 + (prestigeLevel * 0.05); // 5% per level
+      const totalMultiplier = calculateTotalMultiplier();
       
       const updatedTierUpgrades = tierUpgrades.map((tierUpgrade, i) => {
         if (i === index) {
           const newLevel = tierUpgrade.level + 1;
-          const baseClickValue = Number((tierUpgrade.baseClicksProvided * swordMultiplier * prestigeBonus).toFixed(2));
+          const baseClickValue = Number((tierUpgrade.baseClicksProvided * swordMultiplier * totalMultiplier).toFixed(2));
           const totalClickValue = Number((baseClickValue * newLevel).toFixed(2));
           
           return {
@@ -194,16 +221,19 @@ function App() {
 
   const handleSummonUpgrade = (index) => {
     const upgrade = { ...summonUpgrades[index] };
-    if (currentCoins >= upgrade.cost) {  // Check current coins
+    const costReduction = calculateCostReduction(artifacts);
+    const finalCost = Math.floor(upgrade.cost * (1 - costReduction));
+
+    if (currentCoins >= finalCost) {
       audioFunctions.current.playPurchaseSound();
-      setCurrentCoins(prev => prev - upgrade.cost);  // Spend from current coins
+      setCurrentCoins(prev => prev - finalCost);
       
-      const prestigeBonus = 1 + (prestigeLevel * 0.05); // 5% per level
+      const cpsMultiplier = calculateCPSMultiplier();
       
       const updatedSummonUpgrades = summonUpgrades.map((summonUpgrade, i) => {
         if (i === index) {
           const newLevel = upgrade.level + 1;
-          const baseCps = Number((upgrade.baseCps * swordMultiplier * prestigeBonus).toFixed(2));
+          const baseCps = Number((upgrade.baseCps * swordMultiplier * cpsMultiplier).toFixed(2));
           const newTotalCps = Number((baseCps * newLevel).toFixed(2));
           return {
             ...summonUpgrade,
@@ -229,12 +259,15 @@ function App() {
   };
 
   const handlePrestige = (gainedPrestige) => {
-    setPrestigeCurrency(prev => prev + gainedPrestige);
+    const prestigeGainMultiplier = calculatePrestigeGainMultiplier();
+    const finalGain = Math.floor(gainedPrestige * prestigeGainMultiplier);
+    
+    setPrestigeCurrency(prev => prev + finalGain);
     setPrestigeLevel(prev => prev + 1);
     
-    // Reset game state
-    setCurrentCoins(0);  // Reset current coins
-    setClickValue(1);
+    // Reset game state but keep lifetime stats
+    setCurrentCoins(0);
+    setClickValue(1);  // Reset to base value
     setCps(0);
     
     // Reset upgrades
@@ -242,26 +275,16 @@ function App() {
     setSwordUpgrades(swordUpgradesArray);
     setSummonUpgrades(summonUpgradesArray);
     
-    // Increase requirement for next prestige
     setPrestigeRequirement(prev => Math.floor(prev * 1.5));
-    
-    // Close prestige shop
     setIsPrestigeOpen(false);
     
-    // Update lifetime stats
+    // Update only prestige count in lifetime stats
     setLifetimeStats(prev => ({
       ...prev,
       prestigeCount: prev.prestigeCount + 1
     }));
     
-    // Play sound
     audioFunctions.current.playPurchaseSound();
-  };
-
-  const calculateTotalMultiplier = () => {
-    const prestigeMultiplier = calculatePrestigeMultiplier(prestigeLevel);
-    const artifactBonus = calculateTotalBonus(artifacts, 'CLICK_POWER');
-    return prestigeMultiplier * (1 + artifactBonus);
   };
 
   const handleArtifactPurchase = (artifactId) => {
@@ -287,13 +310,12 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (cps > 0) {
-        const cpsValue = Math.floor(cps);  // Ensure integer value
+        const cpsValue = Math.floor(cps);
         setLifetimeStats(prev => ({
           ...prev,
-          clicks: Math.floor(prev.clicks + cpsValue),
-          coins: Math.floor(prev.coins + cpsValue)
+          coins: prev.coins + cpsValue  // Only update coins from CPS
         }));
-        setCurrentCoins(prev => prev + cpsValue);  // Update spendable coins
+        setCurrentCoins(prev => prev + cpsValue);
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -400,11 +422,7 @@ function App() {
               summonUpgrades,
               artifacts
             }),
-            databaseService.saveLifetimeStats(user.id, {
-              clicks: lifetimeStats.clicks,
-              coins: lifetimeStats.coins,
-              prestigeCount: lifetimeStats.prestigeCount
-            }),
+            databaseService.saveLifetimeStats(user.id, lifetimeStats),
             databaseService.saveAchievements(user.id, userAchievements),
             // Update leaderboard with context username
             databaseService.updateLeaderboard(user.id, username || 'Anonymous', {
@@ -428,7 +446,7 @@ function App() {
     const timeoutId = setTimeout(saveGameState, 1000);
     return () => clearTimeout(timeoutId);
   }, [currentCoins, clickValue, cps, prestigeCurrency, prestigeLevel, prestigeRequirement, 
-      tierUpgrades, swordUpgrades, summonUpgrades, artifacts, lifetimeStats, userAchievements, user]);
+      tierUpgrades, swordUpgrades, summonUpgrades, artifacts, lifetimeStats, userAchievements, user, username]);
 
   // Replace the existing initialization effect with this one
   useEffect(() => {
@@ -573,6 +591,7 @@ function App() {
           showPrestigeNotification={showPrestigeNotification}
           onPrestigeNotificationClick={handlePrestigeNotificationClick}
           summonUpgrades={summonUpgrades.filter(u => u.level > 0)}
+          prestigeArtifacts={artifacts}
         />
       </main>
 
@@ -586,6 +605,7 @@ function App() {
           handleSummonUpgrade={handleSummonUpgrade}
           currentCoins={currentCoins}
           onClose={() => setIsShopOpen(false)}
+          artifacts={artifacts}
         />
       )}
 

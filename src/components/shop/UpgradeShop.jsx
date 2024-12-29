@@ -13,7 +13,8 @@ const UpgradeShop = ({
   handleSwordUpgrade,
   handleSummonUpgrade,
   currentCoins,
-  onClose
+  onClose,
+  artifacts
 }) => {
   const [activeTab, setActiveTab] = useState('Tiers');
 
@@ -89,6 +90,7 @@ const UpgradeShop = ({
               upgrades={tierUpgrades}
               onUpgrade={handleTierUpgrade}
               coins={currentCoins}
+              artifacts={artifacts}
             />
           )}
           {activeTab === 'Swords' && (
@@ -103,6 +105,7 @@ const UpgradeShop = ({
               upgrades={summonUpgrades}
               onUpgrade={handleSummonUpgrade}
               coins={currentCoins}
+              artifacts={artifacts}
             />
           )}
         </div>

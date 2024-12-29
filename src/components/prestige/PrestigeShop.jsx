@@ -1,7 +1,7 @@
 import React from 'react';
 import prestigeCoinIcon from '../../img/platnium.png';
 import { formatNumber } from '../../utils/formatNumber';
-import { calculateArtifactCost } from '../../data/prestigeArtifacts';
+import { calculateArtifactCost, calculateTotalBonus } from '../../data/prestigeArtifacts';
 
 const PrestigeShop = ({
   isOpen,
@@ -18,6 +18,24 @@ const PrestigeShop = ({
 
   const potentialGain = Math.floor(currentClicks / prestigeRequirement);
   const prestigeBonus = prestigeLevel * 0.05; // 5% per level
+
+  const getArtifactEffect = (artifact) => {
+    const currentBonus = (artifact.effect.value * artifact.level * 100).toFixed(0);
+    switch (artifact.effect.type) {
+      case 'CLICK_POWER':
+        return `+${currentBonus}% Click Power`;
+      case 'CPS_BOOST':
+        return `+${currentBonus}% CPS`;
+      case 'SWORD_BOOST':
+        return `+${currentBonus}% Sword Multiplier`;
+      case 'COST_REDUCTION':
+        return `-${currentBonus}% Upgrade Costs`;
+      case 'PRESTIGE_GAIN':
+        return `+${currentBonus}% Prestige Gain`;
+      default:
+        return '';
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -42,11 +60,8 @@ const PrestigeShop = ({
               </span>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-white hover:text-game-highlight transition-colors"
-          >
-            <span className="material-icons">close</span>
+          <button onClick={onClose}>
+            <span className="material-icons text-white hover:text-game-highlight">close</span>
           </button>
         </div>
 
@@ -112,6 +127,19 @@ const PrestigeShop = ({
                     <p className="text-sm text-white">
                       Level {artifact.level}/{artifact.maxLevel}
                     </p>
+                    {artifact.level > 0 && (
+                      <div className="flex items-center space-x-2 mt-1">
+                        <img 
+                          src={prestigeCoinIcon} 
+                          alt="Effect" 
+                          className="w-4 h-4"
+                          style={{ imageRendering: 'pixelated' }}
+                        />
+                        <span className="text-purple-400 text-sm">
+                          {getArtifactEffect(artifact)}
+                        </span>
+                      </div>
+                    )}
                     {artifact.level < artifact.maxLevel && (
                       <div className="flex items-center space-x-2 mt-2">
                         <img 

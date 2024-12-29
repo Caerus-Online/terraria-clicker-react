@@ -29,7 +29,8 @@ const ClickerCore = forwardRef(({
   prestigeLevel = 0,
   showPrestigeNotification = false,
   onPrestigeNotificationClick,
-  summonUpgrades = []
+  summonUpgrades = [],
+  prestigeArtifacts = []
 }, ref) => {
   const [summonElements, setSummonElements] = useState([]);
 
@@ -141,30 +142,55 @@ const ClickerCore = forwardRef(({
               <div className="flex items-center space-x-2">
                 <img src={gameImages.click} alt="Click Power" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                 <span className="text-game-gold">{formatNumber(clickValue)}</span>
+                {prestigeArtifacts?.some(a => a.effect.type === 'CLICK_POWER' && a.level > 0) && (
+                  <span className="text-purple-400 text-sm">
+                    (+{(calculateTotalBonus(prestigeArtifacts, 'CLICK_POWER') * 100).toFixed(0)}%)
+                  </span>
+                )}
               </div>
               
               {/* CPS */}
               <div className="flex items-center space-x-2">
                 <img src={gameImages.cps} alt="CPS" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                 <span className="text-game-silver">{formatNumber(cps)} per second</span>
+                {prestigeArtifacts?.some(a => a.effect.type === 'CPS_BOOST' && a.level > 0) && (
+                  <span className="text-purple-400 text-sm">
+                    (+{(calculateTotalBonus(prestigeArtifacts, 'CPS_BOOST') * 100).toFixed(0)}%)
+                  </span>
+                )}
               </div>
               
               {/* Multiplier */}
               <div className="flex items-center space-x-2">
                 <span className="text-game-highlight">x{formatNumber(swordMultiplier)}</span>
                 <span className="text-sm">Multiplier</span>
+                {prestigeArtifacts?.some(a => a.effect.type === 'SWORD_BOOST' && a.level > 0) && (
+                  <span className="text-purple-400 text-sm">
+                    (+{(calculateTotalBonus(prestigeArtifacts, 'SWORD_BOOST') * 100).toFixed(0)}%)
+                  </span>
+                )}
               </div>
               
               {/* Prestige Level */}
               <div className="flex items-center space-x-2">
                 <span className="text-purple-400">Lv.{prestigeLevel}</span>
                 <span className="text-sm">Prestige</span>
+                {prestigeArtifacts?.some(a => a.effect.type === 'PRESTIGE_GAIN' && a.level > 0) && (
+                  <span className="text-purple-400 text-sm">
+                    (+{(calculateTotalBonus(prestigeArtifacts, 'PRESTIGE_GAIN') * 100).toFixed(0)}%)
+                  </span>
+                )}
               </div>
 
               {/* Current Coins */}
               <div className="flex items-center justify-center space-x-2 col-span-2">
                 <img src={gameImages.coin} alt="Coins" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} />
                 <span className="text-game-gold text-xl">{formatNumber(currentCoins)}</span>
+                {prestigeArtifacts?.some(a => a.effect.type === 'COST_REDUCTION' && a.level > 0) && (
+                  <span className="text-purple-400 text-sm">
+                    (-{(calculateTotalBonus(prestigeArtifacts, 'COST_REDUCTION') * 100).toFixed(0)}% costs)
+                  </span>
+                )}
               </div>
             </div>
           </div>

@@ -56,11 +56,10 @@ const AuthModal = ({ isOpen, onClose }) => {
     e.preventDefault();
     try {
       setLoading(true);
-      setError(null);
 
-      // First check if username is available in users table
+      // First check if username is available
       const { data: existingUser } = await supabase
-        .from('users')
+        .from('leaderboard')
         .select('username')
         .eq('username', username)
         .single();
@@ -69,7 +68,7 @@ const AuthModal = ({ isOpen, onClose }) => {
         throw new Error('Username already taken');
       }
 
-      // Create auth user first
+      // Create auth user
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -77,18 +76,7 @@ const AuthModal = ({ isOpen, onClose }) => {
 
       if (signUpError) throw signUpError;
 
-      // Create user record first (source of truth for username)
-      const { error: userError } = await supabase
-        .from('users')
-        .insert([{
-          id: authData.user.id,
-          username: username,
-          created_at: new Date().toISOString()
-        }]);
-
-      if (userError) throw userError;
-
-      // Then create leaderboard entry with same username
+      // Create leaderboard entry first (source of truth for username)
       const { error: leaderboardError } = await supabase
         .from('leaderboard')
         .insert([{
@@ -96,18 +84,81 @@ const AuthModal = ({ isOpen, onClose }) => {
           username: username,
           total_coins: 0,
           prestige_level: 0,
-          achievements_earned: 0
+          achievements_earned: 0,
+          updated_at: new Date().toISOString()
         }]);
 
       if (leaderboardError) throw leaderboardError;
 
-      // Initialize game data
-      await databaseService.initializeNewUser(authData.user.id, username);
+      // Then create user record with same username
+      const { error: userError } = await supabase
+        .from('users')
+        .insert([{
+          id: authData.user.id,
+          username: username,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }]);
 
-      setVerificationSent(true);
+      if (userError) throw userError;
+
+      // Initialize game data
+      const { error: progressError } = await supabase
+        .from('game_progress')
+        .insert([{
+          user_id: authData.user.id,
+          clicks: 0,
+          click_value: 1,
+          cps: 0,
+          prestige_currency: 0,
+          prestige_level: 0,
+          prestige_requirement: 1000
+        }]);
+
+      if (progressError) throw progressError;
+
+      // Initialize upgrades
+      const { error: upgradesError } = await supabase
+        .from('upgrades')
+        .insert([{
+          user_id: authData.user.id,
+          tier_upgrades: [],
+          sword_upgrades: [],
+          summon_upgrades: [],
+          artifacts: []
+        }]);
+
+      if (upgradesError) throw upgradesError;
+
+      // Initialize achievements
+      const { error: achievementsError } = await supabase
+        .from('achievements')
+        .insert([{
+          user_id: authData.user.id,
+          achievements: []
+        }]);
+
+      if (achievementsError) throw achievementsError;
+
+      // Initialize lifetime stats
+      const { error: statsError } = await supabase
+        .from('lifetime_stats')
+        .insert([{
+          user_id: authData.user.id,
+          total_clicks: 0,
+          total_coins: 0,
+          total_prestiges: 0
+        }]);
+
+      if (statsError) throw statsError;
+
+      setMessage('Check your email for the confirmation link.');
+      setMessageType('success');
+      setUsername(username);  // Set the username in context immediately
     } catch (error) {
       console.error('Error signing up:', error);
-      setError(error.message);
+      setMessage(error.message);
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -158,6 +209,18 @@ const AuthModal = ({ isOpen, onClose }) => {
           </p>
 
           <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-3">
+            {!isLogin && (
+              <div className="space-y-1">
+                <label className="block text-white font-game text-sm">Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setLocalUsername(e.target.value)}
+                  className="w-full px-3 py-2 bg-black bg-opacity-50 rounded border border-game-accent text-white focus:border-game-highlight outline-none"
+                  required
+                />
+              </div>
+            )}
             <div className="space-y-1">
               <label className="block text-white font-game text-sm">Email</label>
               <input
@@ -179,19 +242,6 @@ const AuthModal = ({ isOpen, onClose }) => {
                 required
               />
             </div>
-
-            {!isLogin && (
-              <div className="space-y-1">
-                <label className="block text-white font-game text-sm">Username</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setLocalUsername(e.target.value)}
-                  className="w-full px-3 py-2 bg-black bg-opacity-50 rounded border border-game-accent text-white focus:border-game-highlight outline-none"
-                  required
-                />
-              </div>
-            )}
 
             {error && (
               <div className="text-red-500 text-sm font-game">

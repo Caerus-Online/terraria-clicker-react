@@ -84,8 +84,14 @@ export const calculateArtifactCost = (artifact) => {
 
 // Helper function to calculate total bonus from artifacts
 export const calculateTotalBonus = (artifacts, type) => {
-  const artifact = artifacts.find(a => a.effect.type === type);
-  return artifact ? artifact.effect.value * artifact.level : 0;
+  const relevantArtifacts = artifacts.filter(a => a.effect.type === type);
+  return relevantArtifacts.reduce((total, artifact) => total + (artifact.effect.value * artifact.level), 0);
+};
+
+// Helper function to calculate total cost reduction
+export const calculateCostReduction = (artifacts) => {
+  const reduction = calculateTotalBonus(artifacts, 'COST_REDUCTION');
+  return Math.min(reduction, 0.9); // Cap at 90% reduction
 };
 
 // Helper function to calculate prestige multiplier (5% per level)
