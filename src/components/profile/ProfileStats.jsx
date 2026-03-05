@@ -3,7 +3,7 @@ import coinIcon from '../../img/coin-icon.png';
 import clickIcon from '../../img/click-icon.png';
 import prestigeIcon from '../../img/platnium.png';
 import { formatNumber } from '../../utils/formatNumber';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext-firebase';
 
 const ProfileStats = ({
   isOpen,
