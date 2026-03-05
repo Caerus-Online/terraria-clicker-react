@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { databaseService } from '../../services/databaseService';
+import { databaseService } from '../../services/databaseService-firebase';
 import { formatNumber } from '../../utils/formatNumber';
 import coinIcon from '../../img/coin-icon.png';
 import prestigeIcon from '../../img/platnium.png';
-import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext-firebase';
 
 const LeaderboardPanel = ({ 
   isOpen, 
@@ -41,11 +40,7 @@ const LeaderboardPanel = ({
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Then fetch the leaderboard
-      const { data, error } = await supabase
-        .from('leaderboard')
-        .select('*')
-        .order('total_coins', { ascending: false })
-        .limit(100);
+      const { data, error } = await databaseService.getLeaderboard();
 
       if (error) throw error;
       

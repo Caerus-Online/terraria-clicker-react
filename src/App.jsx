@@ -13,20 +13,21 @@ import { achievements, checkAchievement } from './data/achievementData';
 import AchievementPanel from './components/achievements/AchievementPanel';
 import AchievementNotification from './components/achievements/AchievementNotification';
 import ProfileStats from './components/profile/ProfileStats';
-import { useAuth } from './contexts/AuthContext';
-import { databaseService } from './services/databaseService';
-import AuthModal from './components/auth/AuthModal';
-import { playerService } from './services/playerService';
+import { useAuth } from './contexts/AuthContext-firebase';
+import { databaseService } from './services/databaseService-firebase';
+import AuthModal from './components/auth/AuthModal-firebase';
+import UsernameSelectionModal from './components/auth/UsernameSelectionModal';
+import { playerService } from './services/playerService-firebase';
 import LeaderboardPanel from './components/leaderboard/LeaderboardPanel';
-import { setupDatabase } from './scripts/setupDatabase';
+import { setupDatabase } from './scripts/setupDatabase-firebase';
 import { reattachImagesToUpgrades } from './data/imageData';
-import { supabase } from './lib/supabase';
+import { auth, db } from './lib/firebase';
 
 // Make it available globally
 window.setupDatabase = setupDatabase;
 
 function App() {
-  const { user, username } = useAuth();
+  const { user, username, needsUsername } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
@@ -530,12 +531,11 @@ function App() {
     const hash = window.location.hash;
     if (hash.includes('access_token=')) {
       // Force sign out and show verification success modal
-      supabase.auth.signOut().then(() => {
-        setIsAuthModalOpen(true);
-        setVerificationSuccess(true);
-        // Remove the hash to clean up the URL
-        window.location.hash = '';
-      });
+      // Note: Firebase handles this automatically with auth state changes
+      setIsAuthModalOpen(true);
+      setVerificationSuccess(true);
+      // Remove the hash to clean up the URL
+      window.location.hash = '';
     }
 
     // Initialize game state
@@ -702,6 +702,13 @@ function App() {
         <AuthModal 
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
+        />
+      )}
+
+      {needsUsername && user && (
+        <UsernameSelectionModal 
+          isOpen={needsUsername}
+          onClose={() => {}} // Don't allow closing without setting username
         />
       )}
     </div>
