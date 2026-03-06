@@ -23,7 +23,7 @@ const ClickArea = ({ onClick, coins, clickValue, isAnimating }) => {
           `}
         >
           {/* Sword Icon */}
-          <img src="/assets/images/weapons/sword.png" alt="Sword" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
+          <img src="/assets/images/weapons/swords/sword.png" alt="Sword" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
           
           {/* Click Value Display */}
           <div className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full">

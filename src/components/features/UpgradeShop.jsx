@@ -35,7 +35,7 @@ const UpgradeShop = ({ upgrades, onPurchase, coins }) => {
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <img src={`/assets/images/weapons/sword${Math.min(index + 1, 12)}.png`} alt={sword.name} className="w-8 h-8 mr-2" style={{ imageRendering: 'pixelated' }} />
+                    <img src={`/assets/images/weapons/swords/sword${Math.min(index + 1, 12)}.png`} alt={sword.name} className="w-8 h-8 mr-2" style={{ imageRendering: 'pixelated' }} />
                     <div>
                       <div className="font-medium text-black">{sword.name}</div>
                       <div className="text-xs text-black">
@@ -58,10 +58,10 @@ const UpgradeShop = ({ upgrades, onPurchase, coins }) => {
           </div>
         </div>
 
-        {/* Minion Upgrades */}
+        {/* Minion/Summon Upgrades */}
         <div className="rounded-lg p-3" style={{ backgroundColor: 'rgba(86, 86, 188, 0.7)', border: '2px solid black' }}>
           <h3 className="font-semibold text-green-400 mb-2" style={{ fontFamily: '"Andy-Bold", cursive' }}>
-            👥 Minions
+            👥 Summons
           </h3>
           <div className="space-y-2">
             {upgrades.minions.map((minion, index) => (
@@ -83,7 +83,7 @@ const UpgradeShop = ({ upgrades, onPurchase, coins }) => {
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <img src={`/assets/images/weapons/minion${Math.min(index + 1, 10)}.png`} alt={minion.name} className="w-8 h-8 mr-2" style={{ imageRendering: 'pixelated' }} />
+                    <img src={`/assets/images/weapons/summons/minion${Math.min(index + 1, 10)}.png`} alt={minion.name} className="w-8 h-8 mr-2" style={{ imageRendering: 'pixelated' }} />
                     <div>
                       <div className="font-medium text-black">{minion.name}</div>
                       <div className="text-xs text-black">
