@@ -4,14 +4,14 @@ const UpgradeShop = ({ upgrades, onPurchase, coins }) => {
   const canAfford = (cost) => coins >= cost
 
   return (
-    <div className="bg-black bg-opacity-60 backdrop-blur-sm rounded-lg p-4 border border-orange-900/30">
+    <div style={{ backgroundColor: 'rgba(43, 37, 101, 0.7)', border: '2px solid black' }} className="rounded-lg p-4">
       <h2 className="text-xl font-bold text-orange-400 mb-4" style={{ fontFamily: '"Andy-Bold", cursive' }}>
         Upgrade Shop
       </h2>
       
       <div className="space-y-3">
         {/* Sword Upgrades */}
-        <div className="bg-black bg-opacity-40 rounded-lg p-3 border border-orange-900/20">
+        <div className="rounded-lg p-3" style={{ backgroundColor: 'rgba(86, 86, 188, 0.7)', border: '2px solid black' }}>
           <h3 className="font-semibold text-blue-400 mb-2" style={{ fontFamily: '"Andy-Bold", cursive' }}>
             ⚔️ Swords
           </h3>
@@ -24,23 +24,31 @@ const UpgradeShop = ({ upgrades, onPurchase, coins }) => {
                 className={`
                   w-full p-2 rounded text-left transition-all duration-200
                   ${canAfford(sword.cost) 
-                    ? 'bg-black bg-opacity-30 hover:bg-opacity-50 cursor-pointer border border-orange-900/20 hover:border-orange-900/40' 
-                    : 'bg-black bg-opacity-20 cursor-not-allowed opacity-50 border border-orange-900/10'
+                    ? 'cursor-pointer hover:shadow-lg' 
+                    : 'cursor-not-allowed opacity-50'
                   }
                 `}
+                style={{ 
+                  backgroundColor: canAfford(sword.cost) ? 'rgba(193, 161, 140, 0.7)' : 'rgba(109, 109, 107, 0.7)',
+                  border: '2px solid black'
+                }}
               >
                 <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-medium text-white">{sword.name}</div>
-                    <div className="text-xs text-gray-300">
-                      Power: +{sword.clickBonus}
+                  <div className="flex items-center">
+                    <img src={`/assets/images/weapons/sword${Math.min(index + 1, 12)}.png`} alt={sword.name} className="w-8 h-8 mr-2" style={{ imageRendering: 'pixelated' }} />
+                    <div>
+                      <div className="font-medium text-black">{sword.name}</div>
+                      <div className="text-xs text-black">
+                        Power: +{sword.clickBonus}
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-yellow-400 font-mono">
-                      💰 {sword.cost.toLocaleString()}
+                    <div className="text-yellow-400 font-mono flex items-center">
+                      <img src="/assets/images/ui/coin-icon.png" alt="Coins" className="w-4 h-4 mr-1" />
+                      {sword.cost.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-300">
+                    <div className="text-xs text-black">
                       Level {sword.level}
                     </div>
                   </div>
@@ -51,7 +59,7 @@ const UpgradeShop = ({ upgrades, onPurchase, coins }) => {
         </div>
 
         {/* Minion Upgrades */}
-        <div className="bg-black bg-opacity-40 rounded-lg p-3 border border-orange-900/20">
+        <div className="rounded-lg p-3" style={{ backgroundColor: 'rgba(86, 86, 188, 0.7)', border: '2px solid black' }}>
           <h3 className="font-semibold text-green-400 mb-2" style={{ fontFamily: '"Andy-Bold", cursive' }}>
             👥 Minions
           </h3>
@@ -64,23 +72,31 @@ const UpgradeShop = ({ upgrades, onPurchase, coins }) => {
                 className={`
                   w-full p-2 rounded text-left transition-all duration-200
                   ${canAfford(minion.cost) 
-                    ? 'bg-black bg-opacity-30 hover:bg-opacity-50 cursor-pointer border border-orange-900/20 hover:border-orange-900/40' 
-                    : 'bg-black bg-opacity-20 cursor-not-allowed opacity-50 border border-orange-900/10'
+                    ? 'cursor-pointer hover:shadow-lg' 
+                    : 'cursor-not-allowed opacity-50'
                   }
                 `}
+                style={{ 
+                  backgroundColor: canAfford(minion.cost) ? 'rgba(193, 161, 140, 0.7)' : 'rgba(109, 109, 107, 0.7)',
+                  border: '2px solid black'
+                }}
               >
                 <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-medium text-white">{minion.name}</div>
-                    <div className="text-xs text-gray-300">
-                      CPS: +{minion.cps}
+                  <div className="flex items-center">
+                    <img src={`/assets/images/weapons/minion${Math.min(index + 1, 10)}.png`} alt={minion.name} className="w-8 h-8 mr-2" style={{ imageRendering: 'pixelated' }} />
+                    <div>
+                      <div className="font-medium text-black">{minion.name}</div>
+                      <div className="text-xs text-black">
+                        CPS: +{minion.cps}
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-yellow-400 font-mono">
-                      💰 {minion.cost.toLocaleString()}
+                    <div className="text-yellow-400 font-mono flex items-center">
+                      <img src="/assets/images/ui/coin-icon.png" alt="Coins" className="w-4 h-4 mr-1" />
+                      {minion.cost.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-300">
+                    <div className="text-xs text-black">
                       Level {minion.level}
                     </div>
                   </div>
@@ -91,11 +107,11 @@ const UpgradeShop = ({ upgrades, onPurchase, coins }) => {
         </div>
 
         {/* Coming Soon */}
-        <div className="bg-black bg-opacity-40 rounded-lg p-3 text-center border border-orange-900/20">
-          <p className="text-gray-300 text-sm">
+        <div className="rounded-lg p-3 text-center" style={{ backgroundColor: 'rgba(193, 161, 140, 0.7)', border: '2px solid black' }}>
+          <p className="text-black text-sm">
             🎯 Monster battles coming in Phase 2B!
           </p>
-          <p className="text-gray-300 text-xs mt-1">
+          <p className="text-black text-xs mt-1">
             Boss battles in Phase 2C
           </p>
         </div>

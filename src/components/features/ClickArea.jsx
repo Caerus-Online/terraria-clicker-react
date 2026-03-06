@@ -7,7 +7,7 @@ const ClickArea = ({ onClick, coins, clickValue, isAnimating }) => {
   }
 
   return (
-    <div className="bg-black bg-opacity-60 backdrop-blur-sm rounded-lg p-6 border border-orange-900/30 text-center">
+    <div style={{ backgroundColor: 'rgba(43, 37, 101, 0.7)', border: '2px solid black' }} className="rounded-lg p-6 text-center">
       <h2 className="text-xl font-bold text-orange-400 mb-6" style={{ fontFamily: '"Andy-Bold", cursive' }}>
         Battle Arena
       </h2>
@@ -18,16 +18,12 @@ const ClickArea = ({ onClick, coins, clickValue, isAnimating }) => {
           onClick={handleClick}
           className={`
             relative w-32 h-32 mx-auto rounded-full
-            bg-gradient-to-br from-gray-600 to-gray-800
-            border-4 border-gray-500
-            hover:from-gray-500 hover:to-gray-700
-            active:scale-95 transition-all duration-150
-            shadow-lg hover:shadow-xl
+            hover:scale-105 active:scale-95 transition-all duration-150
             ${isAnimating ? 'animate-pulse' : ''}
           `}
         >
           {/* Sword Icon */}
-          <div className="text-4xl">⚔️</div>
+          <img src="/assets/images/weapons/sword.png" alt="Sword" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
           
           {/* Click Value Display */}
           <div className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full">
@@ -42,15 +38,16 @@ const ClickArea = ({ onClick, coins, clickValue, isAnimating }) => {
       </div>
 
       {/* Coin Display */}
-      <div className="bg-black bg-opacity-40 rounded-lg p-4 mb-4 border border-orange-900/20">
-        <div className="text-3xl font-bold text-yellow-400 mb-2" style={{ fontFamily: '"Andy-Bold", cursive' }}>
-          💰 {coins.toLocaleString()}
+      <div className="rounded-lg p-4 mb-4" style={{ backgroundColor: 'rgba(193, 161, 140, 0.7)', border: '2px solid black' }}>
+        <div className="text-3xl font-bold text-yellow-400 mb-2 flex items-center justify-center" style={{ fontFamily: '"Andy-Bold", cursive' }}>
+          <img src="/assets/images/ui/coin-icon.png" alt="Coins" className="w-8 h-8 mr-2" />
+          {coins.toLocaleString()}
         </div>
-        <p className="text-sm text-gray-300">Click the sword to earn coins!</p>
+        <p className="text-sm text-black">Click the sword to earn coins!</p>
       </div>
 
       {/* Battle Status */}
-      <div className="text-sm text-gray-300">
+      <div className="text-sm text-black">
         <p>🎯 Ready for monster battles...</p>
         <p className="text-xs mt-1">Monster system coming in Phase 2B</p>
       </div>

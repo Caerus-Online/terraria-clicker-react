@@ -23,6 +23,12 @@ img {
   image-rendering: crisp-edges;
 }
 
+/* Vertical text for sidebar */
+.writing-mode-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
 /* Custom game styles */
 .game-text {
   @apply text-white font-bold;
