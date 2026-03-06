@@ -7,8 +7,10 @@ const ClickArea = ({ onClick, coins, clickValue, isAnimating }) => {
   }
 
   return (
-    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 text-center">
-      <h2 className="text-xl font-bold text-orange-400 mb-6">Battle Arena</h2>
+    <div className="bg-black bg-opacity-60 backdrop-blur-sm rounded-lg p-6 border border-orange-900/30 text-center">
+      <h2 className="text-xl font-bold text-orange-400 mb-6" style={{ fontFamily: '"Andy-Bold", cursive' }}>
+        Battle Arena
+      </h2>
       
       {/* Click Target - Sword */}
       <div className="relative mb-6">
@@ -40,15 +42,15 @@ const ClickArea = ({ onClick, coins, clickValue, isAnimating }) => {
       </div>
 
       {/* Coin Display */}
-      <div className="bg-slate-700 rounded-lg p-4 mb-4">
-        <div className="text-3xl font-bold text-yellow-400 mb-2">
+      <div className="bg-black bg-opacity-40 rounded-lg p-4 mb-4 border border-orange-900/20">
+        <div className="text-3xl font-bold text-yellow-400 mb-2" style={{ fontFamily: '"Andy-Bold", cursive' }}>
           💰 {coins.toLocaleString()}
         </div>
-        <p className="text-sm text-slate-400">Click the sword to earn coins!</p>
+        <p className="text-sm text-gray-300">Click the sword to earn coins!</p>
       </div>
 
       {/* Battle Status */}
-      <div className="text-sm text-slate-400">
+      <div className="text-sm text-gray-300">
         <p>🎯 Ready for monster battles...</p>
         <p className="text-xs mt-1">Monster system coming in Phase 2B</p>
       </div>
